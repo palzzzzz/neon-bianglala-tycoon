@@ -52,7 +52,7 @@ if RunService:IsStudio() then
 	inspect.OnInvoke=function(command,args)
 		local player=Players:GetPlayers()[1]
 		local profile=player and Data.profiles[player]
-		if command=="snapshot" then return {profile=profile,elapsed=context.elapsed,water=Tide.level,boss=Rats.king and Rats.king.hp} end
+		if command=="snapshot" then return {profile=profile,elapsed=context.elapsed,water=Tide.level,boss=Rats.king and Rats.king.hp,rate=profile and Economy.rates(profile,context.elapsed)} end
 		if not profile then return nil end
 		args=args or {}
 		if command=="fixture" then

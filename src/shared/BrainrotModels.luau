@@ -13,13 +13,14 @@ function Models.part(parent, name, size, frame, color, material, shape)
 end
 function Models.label(part, title, detail, color, height)
 	local gui = Instance.new("BillboardGui")
-	gui.Name, gui.Size = "Label", UDim2.fromOffset(260, 74)
+	gui.Name, gui.Size = "Label", UDim2.fromScale(16, 4)
 	gui.StudsOffset = Vector3.new(0, height or 4, 0)
-	gui.MaxDistance, gui.AlwaysOnTop = 130, false
+	gui.MaxDistance, gui.AlwaysOnTop = 65, false
 	gui.Parent = part
 	local text = Instance.new("TextLabel")
 	text.Size, text.BackgroundTransparency = UDim2.fromScale(1, 1), 1
 	text.Font, text.TextSize = Enum.Font.GothamBold, 19
+	text.TextScaled=true
 	text.TextColor3, text.TextStrokeTransparency = color or Color3.new(1,1,1), 0.25
 	text.Text = title .. "\n" .. detail
 	text.Parent = gui
@@ -136,8 +137,8 @@ function Models.build(catch, parent)
 end
 function Models.collectionLabel(core,item,catch)
 	local label=Instance.new("BillboardGui")
-	label.Name,label.Size="CollectionLabel",UDim2.fromOffset(300,108)
-	label.StudsOffset, label.MaxDistance=Vector3.new(0,6.7,0),105
+	label.Name,label.Size="CollectionLabel",UDim2.fromScale(14,4.8)
+	label.StudsOffset, label.MaxDistance=Vector3.new(0,6.7,0),85
 	label.AlwaysOnTop=false
 	label.Parent=core
 	local mutation=catch.mutation or "Normal"
@@ -148,6 +149,7 @@ function Models.collectionLabel(core,item,catch)
 		text.Size,text.Position=UDim2.fromScale(1,0.333),UDim2.fromScale(0,(i-1)/3)
 		text.BackgroundTransparency=1
 		text.Text,text.TextSize,text.Font=value,i==1 and 26 or 25,Enum.Font.GothamBlack
+		text.TextScaled=true
 		text.TextColor3=i==2 and Catalog.colors[item.rarity] or i==3 and Color3.fromRGB(172,255,164) or Color3.new(1,1,1)
 		text.TextStrokeColor3,text.TextStrokeTransparency=Color3.fromRGB(40,30,58),0
 		text.Parent=label

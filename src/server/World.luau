@@ -48,6 +48,15 @@ function World.create()
 	end
 	local hub = part("Hub",Vector3.one*7,center,Color3.fromRGB(255,225,103),Enum.Material.Neon)
 	hub.Shape = Enum.PartType.Ball
+	local marquee=part("WheelMarquee",Vector3.new(33,6,1),Vector3.new(0,14,-10),Color3.fromRGB(104,78,149))
+	local title=Instance.new("SurfaceGui")
+	title.Face,title.CanvasSize,title.Parent=Enum.NormalId.Front,Vector2.new(1100,200),marquee
+	local titleText=Instance.new("TextLabel")
+	titleText.Size,titleText.BackgroundTransparency=UDim2.fromScale(1,1),1
+	titleText.Font,titleText.TextSize=Enum.Font.GothamBlack,65
+	titleText.TextColor3=Color3.fromRGB(255,232,148)
+	titleText.Text="BIANGLALA BRAINROT\nPASAR MALAM · REZEKI BERPUTAR"
+	titleText.Parent=title
 	for i=1,48 do
 		local a,b = i*math.pi/24,(i+1)*math.pi/24
 		local p,q = center+Vector3.new(math.cos(a)*40,math.sin(a)*40,0),center+Vector3.new(math.cos(b)*40,math.sin(b)*40,0)
@@ -83,12 +92,39 @@ function World.create()
 		local a=i*math.pi/4
 		local p=Vector3.new(math.cos(a)*96,0,math.sin(a)*82)
 		part("MarketTent",Vector3.new(12,1,9),p+Vector3.new(0,9,0),palette[i%3+1])
+		for stripe=-2,2 do
+			part("AwningStripe",Vector3.new(1,0.12,9.2),p+Vector3.new(stripe*2,9.6,0),Color3.fromRGB(255,244,219))
+		end
 		part("MarketCounter",Vector3.new(10,3,6),p+Vector3.new(0,1.5,0),palette[(i+1)%3+1])
+		for fruit=1,5 do
+			local produce=part("FruitBasket",Vector3.one*1.2,p+Vector3.new(fruit*1.5-4.5,3.8,0),palette[fruit%3+1])
+			produce.Shape=Enum.PartType.Ball
+		end
 		for _, side in {-1,1} do part("TentPole",Vector3.new(0.6,9,0.6),p+Vector3.new(side*5,4.5,0),Color3.fromRGB(108,79,99)) end
 		local lantern=part("Lantern",Vector3.one*1.5,p+Vector3.new(0,11,0),palette[i%3+1],Enum.Material.Neon)
 		local light=Instance.new("PointLight")
 		light.Brightness,light.Range,light.Color=2,28,palette[2]
 		light.Parent=lantern
+	end
+	for i=1,24 do
+		local a=i*math.pi/12
+		local p=Vector3.new(math.cos(a)*56,0,math.sin(a)*53+6)
+		local lamp=part("PlazaBulb",Vector3.one*0.8,p+Vector3.new(0,12,0),palette[i%3+1],Enum.Material.Neon)
+		if i%3==0 then
+			part("FestivalPole",Vector3.new(0.45,12,0.45),p+Vector3.new(0,6,0),Color3.fromRGB(128,95,116))
+			local lampLight=Instance.new("PointLight");lampLight.Range=24;lampLight.Brightness=0.7;lampLight.Color=palette[2];lampLight.Parent=lamp
+		end
+		local nextA=(i+1)*math.pi/12
+		local q=Vector3.new(math.cos(nextA)*56,12,math.sin(nextA)*53+6)
+		local from=p+Vector3.new(0,12,0)
+		Models.part(root,"FestivalWire",Vector3.new(0.08,0.08,(q-from).Magnitude),CFrame.lookAt((q+from)/2,q),Color3.fromRGB(89,69,103))
+	end
+	for i=1,16 do
+		local a=i*math.pi/8
+		local p=Vector3.new(math.cos(a)*109,0,math.sin(a)*97)
+		part("Planter",Vector3.new(5,1.5,5),p+Vector3.new(0,0.75,0),palette[2])
+		local shrub=part("PastelShrub",Vector3.new(5,5,5),p+Vector3.new(0,3,0),Color3.fromRGB(114,204,155))
+		shrub.Shape=Enum.PartType.Ball
 	end
 	return {root=root,water=water,center=center,fusion=fusion,branch=branch,spawn=spawn}
 end

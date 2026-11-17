@@ -52,7 +52,7 @@ function Stalls.refresh(player,profile,context)
 	folder.Parent=context.world.root
 	Stalls.views[player]=folder
 	for index,stall in profile.stalls do
-		local pos=plot.origin+Vector3.new(((index-1)%3-1)*11,stall.level==5 and 17 or (stall.level-1)*3+2,math.floor((index-1)/3)*11)
+		local pos=plot.origin+Vector3.new(((index-1)%3-1)*17,stall.level==5 and 17 or (stall.level-1)*3+2,math.floor((index-1)/3)*17)
 		stall.position=pos
 		local base=Models.part(folder,"Pedestal_"..index,Vector3.new(9,1,9),CFrame.new(pos),Color3.fromRGB(255,196,128))
 		base.CanCollide=true
@@ -61,8 +61,17 @@ function Stalls.refresh(player,profile,context)
 		for _,dx in {-3,3} do
 			Models.part(folder,"Tiang",Vector3.new(0.8,pos.Y,0.8),CFrame.new(pos.X+dx,pos.Y/2,pos.Z),Color3.fromRGB(108,82,118))
 		end
+		if stall.level>1 then
+			local ladder=Instance.new("TrussPart")
+			ladder.Name,ladder.Anchored="TanggaLapak",true
+			ladder.Size=Vector3.new(2,pos.Y+2,2)
+			ladder.CFrame=CFrame.new(pos.X+4,(pos.Y+2)/2,pos.Z+4)
+			ladder.Color=Color3.fromRGB(255,201,105)
+			ladder.Parent=folder
+		end
 		local selected=profile.selection and table.find(profile.selection,index)
-		Models.label(base,player.DisplayName.." · "..index,"L"..stall.level..(selected and " · BAHAN ✓" or ""),Color3.fromRGB(255,245,208),1)
+		local ownership=Models.label(base,player.DisplayName.." · "..index,"L"..stall.level..(selected and " · BAHAN ✓" or ""),Color3.fromRGB(255,245,208),1)
+		ownership.MaxDistance,ownership.Size=28,UDim2.fromScale(8,2)
 		if stall.catch then
 			local model=Models.build(stall.catch,folder)
 			model:PivotTo(CFrame.new(pos+Vector3.new(0,2.6,0)))
