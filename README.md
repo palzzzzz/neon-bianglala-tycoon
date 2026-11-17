@@ -1,6 +1,8 @@
 # Bianglala Brainrot
 
-[![make.fun](https://img.shields.io/badge/make.fun-roblox--brainrot--01-ff529d)](https://make.fun/bounty/roblox-brainrot-01)
+[![make.fun roblox-brainrot-01](https://make.fun/badge/roblox-brainrot-01.svg)](https://make.fun/bounty/roblox-brainrot-01)
+[![rank](https://make.fun/badge/roblox-brainrot-01/palzzzzz/neon-bianglala-tycoon/rank.svg)](https://make.fun/bounty/roblox-brainrot-01)
+[![reward](https://make.fun/badge/roblox-brainrot-01/palzzzzz/neon-bianglala-tycoon/reward.svg)](https://make.fun/bounty/roblox-brainrot-01)
 
 [Mainkan di Roblox](https://www.roblox.com/games/97111459276883)
 
@@ -36,5 +38,5 @@ D:\brainrot-tools\rojo-7.7.1\rojo.exe build default.project.json --output game.r
 ```
 
 `main.ts` menyalin payload dan membuat dossier dengan vendor kit yang tidak diubah.
-Validasi transcript hanya dapat dibuktikan oleh server make.fun. Screenshot starter
-belum menjadi bukti versi baru sampai diganti dengan tangkapan playtest akhir.
+Validasi transcript hanya dapat dibuktikan oleh server make.fun. Folder `screenshots/`
+berisi empat tangkapan playtest Studio (sampul, fusion, Kios Lotre, Banjir Rob).

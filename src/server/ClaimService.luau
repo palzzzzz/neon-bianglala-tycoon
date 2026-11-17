@@ -31,7 +31,7 @@ end
 function Claim.update()
 	for player,model in Claim.carried do
 		local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-		if root then model:PivotTo(root.CFrame*CFrame.new(0,2.8,-3)) end
+		if root then model:PivotTo(root.CFrame*CFrame.new(0,6,0)) end
 	end
 end
 return Claim
