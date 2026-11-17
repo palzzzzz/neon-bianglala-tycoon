@@ -1,148 +1,90 @@
-local Players = game:GetService("Players")
-local Catalog = require(game.ReplicatedStorage.Shared.Catalog)
-local Hud = {}
-local cream = Color3.fromRGB(255, 235, 199)
-local dark = Color3.fromRGB(28, 23, 47)
-local teal = Color3.fromRGB(83, 239, 220)
-
-local function label(parent, text, pos, size, fontSize, color)
-	local item = Instance.new("TextLabel")
-	item.Position, item.Size = pos, size
-	item.BackgroundTransparency = 1
-	item.Text = text
-	item.TextColor3 = color or cream
-	item.Font = Enum.Font.FredokaOne
-	item.TextSize = fontSize
-	item.TextXAlignment = Enum.TextXAlignment.Left
-	item.Parent = parent
-	return item
-end
-
-local function panel(parent, pos, size)
-	local frame = Instance.new("Frame")
-	frame.Position, frame.Size = pos, size
-	frame.BackgroundColor3 = dark
-	frame.BackgroundTransparency = 0.1
-	frame.BorderSizePixel = 0
-	frame.Parent = parent
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 14)
-	corner.Parent = frame
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(118, 81, 133)
-	stroke.Thickness = 1.5
-	stroke.Parent = frame
-	return frame
-end
-
-function Hud.build()
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "PasarHUD"
-	gui.ResetOnSpawn = false
-	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-	Hud.gui = gui
-	local canvas = Instance.new("Frame")
-	canvas.Name = "ResponsiveCanvas"
-	canvas.Size = UDim2.fromScale(1, 1)
-	canvas.BackgroundTransparency = 1
-	canvas.Parent = gui
-	local scale = Instance.new("UIScale")
-	scale.Parent = canvas
-	local function resize()
-		local viewport = workspace.CurrentCamera.ViewportSize
-		local factor = math.min(1, viewport.X / 1280, viewport.Y / 720)
-		scale.Scale = math.max(0.25, factor)
-		canvas.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
+local Players=game:GetService("Players")
+local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
+local Hud={}
+function Hud.create()
+	local gui=Instance.new("ScreenGui")
+	gui.Name,gui.ResetOnSpawn="PasarHUD",false
+	gui.IgnoreGuiInset=true
+	gui.Parent=Players.LocalPlayer:WaitForChild("PlayerGui")
+	local function panel(name,size,position,text,color)
+		local label=Instance.new("TextLabel")
+		label.Name,label.Size,label.Position=name,size,position
+		label.BackgroundColor3=Color3.fromRGB(44,39,74)
+		label.BackgroundTransparency=0.1
+		label.TextColor3=color or Color3.fromRGB(255,244,216)
+		label.Text,label.TextSize,label.Font=text,20,Enum.Font.GothamBold
+		label.TextWrapped=true
+		label.Parent=gui
+		local round=Instance.new("UICorner");round.CornerRadius=UDim.new(0,12);round.Parent=label
+		local stroke=Instance.new("UIStroke");stroke.Color=Color3.fromRGB(255,198,119);stroke.Thickness=2;stroke.Parent=label
+		stroke.ApplyStrokeMode=Enum.ApplyStrokeMode.Border
+		return label
 	end
-	resize()
-	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(resize)
-	gui = canvas
-	local money = panel(gui, UDim2.new(1, -304, 0, 14), UDim2.fromOffset(286, 105))
-	label(money, "DOMPET PASAR", UDim2.fromOffset(18, 10), UDim2.fromOffset(250, 20), 14, teal)
-	Hud.cash = label(money, "$25", UDim2.fromOffset(18, 31), UDim2.fromOffset(250, 43), 36)
-	Hud.income = label(money, "+$0/s  •  CABANG 0", UDim2.fromOffset(18, 77), UDim2.fromOffset(250, 20), 16, teal)
-	local clock = panel(gui, UDim2.new(0.5, -145, 0, 14), UDim2.fromOffset(290, 65))
-	Hud.clock = label(clock, "SENJA DI PASAR", UDim2.fromOffset(14, 8), UDim2.fromOffset(270, 24), 19)
-	Hud.tide = label(clock, "ROB 0 / TIANG 1", UDim2.fromOffset(14, 36), UDim2.fromOffset(270, 22), 15, teal)
-	Hud.banner = label(gui, "", UDim2.new(0.5, -320, 0, 120), UDim2.fromOffset(640, 70), 31, teal)
-	Hud.banner.TextXAlignment = Enum.TextXAlignment.Center
-	Hud.banner.TextStrokeTransparency = 0.25
-	Hud.notice = label(gui, "Naik platform di kanan roda. E klaim gondola, lalu E di lapakmu.", UDim2.new(0.5, -410, 1, -92), UDim2.fromOffset(820, 32), 20)
-	Hud.notice.TextXAlignment = Enum.TextXAlignment.Center
-	Hud.notice.TextStrokeTransparency = 0.15
-	local bottom = panel(gui, UDim2.new(0.5, -380, 1, -52), UDim2.fromOffset(760, 42))
-	Hud.carry = label(bottom, "E KLAIM / TARUH     F BAHAN     R TIANG     T KUNCI", UDim2.fromOffset(18, 10), UDim2.fromOffset(730, 23), 16)
-	local recipeButton = Instance.new("TextButton")
-	recipeButton.Size = UDim2.fromOffset(144, 43)
-	recipeButton.Position = UDim2.fromOffset(18, 18)
-	recipeButton.Text = "RESEP FUSION"
-	recipeButton.Font = Enum.Font.FredokaOne
-	recipeButton.TextSize = 16
-	recipeButton.TextColor3 = cream
-	recipeButton.BackgroundColor3 = dark
-	recipeButton.Parent = gui
-	Hud.recipes = panel(gui, UDim2.fromOffset(18, 73), UDim2.fromOffset(420, 340))
-	Hud.recipes.Visible = false
-	local rows = {"GEROBAK FUSION • pilih 2 lapak dengan F", ""}
-	for _, recipe in Catalog.Recipes do
-		table.insert(rows, Catalog.Characters[recipe[1]].name .. " + " .. Catalog.Characters[recipe[2]].name)
-		table.insert(rows, "→ " .. Catalog.Characters[recipe[3]].name)
-	end
-	table.insert(rows, "2 Legendary → Molen 30% / Epic 70%")
-	table.insert(rows, "Mutasi: Gold 4% • Diamond 2% • Lava 1.5% • Rainbow 0.5%")
-	local recipes = label(Hud.recipes, table.concat(rows, "\n"), UDim2.fromOffset(14, 12), UDim2.fromOffset(393, 315), 15)
-	recipes.TextYAlignment = Enum.TextYAlignment.Top
-	recipeButton.Activated:Connect(function() Hud.recipes.Visible = not Hud.recipes.Visible end)
-	Hud.stalls = panel(gui, UDim2.new(1, -220, 0, 132), UDim2.fromOffset(202, 210))
-	Hud.stallText = label(Hud.stalls, "LAPAKMU\nMenunggu profil...", UDim2.fromOffset(12, 12), UDim2.fromOffset(180, 190), 15)
-	Hud.stallText.TextYAlignment = Enum.TextYAlignment.Top
-	Hud.lowest = 1
-	return Hud
+	Hud.cash=panel("Cash",UDim2.fromScale(0.23,0.11),UDim2.fromScale(0.75,0.08),"$25  |  +$0/s")
+	Hud.gauge=panel("Tide",UDim2.fromScale(0.23,0.1),UDim2.fromScale(0.75,0.2),"ROB 0 / TIANG 1")
+	Hud.timer=panel("GondolaTimer",UDim2.fromScale(0.4,0.075),UDim2.fromScale(0.3,0.055),"GONDOLA BERIKUTNYA: 5",Color3.fromRGB(255,231,123))
+	Hud.timer.TextSize=26
+	Hud.next=panel("NextStep",UDim2.fromScale(0.68,0.07),UDim2.fromScale(0.16,0.8),"LANGKAH BERIKUTNYA: Klaim gondola pertama")
+	Hud.pity=panel("Pity",UDim2.fromScale(0.23,0.1),UDim2.fromScale(0.75,0.32),"Jaminan Epic: 0/15")
+	Hud.banner=panel("Notice",UDim2.fromScale(0.53,0.065),UDim2.fromScale(0.2,0.18),"SELAMAT DATANG DI PASAR!")
+	Hud.help=panel("Controls",UDim2.fromScale(0.42,0.07),UDim2.fromScale(0.02,0.9),"E klaim / taruh · R tiang · T kunci · F bahan")
+	Hud.recipe=panel("Recipes",UDim2.fromScale(0.6,0.58),UDim2.fromScale(0.2,0.28),"")
+	Hud.recipe.Visible=false
+	Hud.recipe.TextSize=17
+	local lines={"RESEP GEROBAK FUSION"}
+	for _,r in Catalog.recipes do table.insert(lines,Catalog.byId[r[1]].name.." + "..Catalog.byId[r[2]].name.." → "..Catalog.byId[r[3]].name) end
+	table.insert(lines,"Legendary + Legendary → Maharaja 30% / Epic 70%")
+	table.insert(lines,"Mutasi: Gold 4% · Diamond 2% · Sambal-Lava 1,5% · Rainbow 0,5%")
+	Hud.recipe.Text=table.concat(lines,"\n\n")
+	local button=Instance.new("TextButton")
+	button.Size,button.Position=UDim2.fromScale(0.16,0.06),UDim2.fromScale(0.82,0.9)
+	button.Text,button.TextSize,button.Font="RESEP FUSION",17,Enum.Font.GothamBold
+	button.BackgroundColor3,button.TextColor3=Color3.fromRGB(255,204,116),Color3.fromRGB(46,40,68)
+	button.Parent=gui
+	button.Activated:Connect(function() Hud.recipe.Visible=not Hud.recipe.Visible end)
+	Hud.gui=gui
+	task.delay(6,function() if not Hud.lastNotice then Hud.banner.Visible=false end end)
 end
-
-function Hud.renderCash(value)
-	Hud.cash.Text = Catalog.money(value)
+function Hud.renderCash(cash) Hud.cash.Text="$"..string.format("%.0f",cash) end
+function Hud.renderIncomeRate(rate,branches)
+	Hud.cash.Text..="\n+$"..string.format("%.1f",rate).."/s · CABANG "..branches
 end
-
-function Hud.renderIncomeRate(rate, branches)
-	Hud.income.Text = "+" .. Catalog.money(rate) .. "/s  •  CABANG " .. branches
+function Hud.showTideWarning(message)
+	Hud.banner.Text=message
+	Hud.banner.Visible=true
+	local stamp=os.clock()
+	Hud.lastNotice=stamp
+	task.delay(6,function() if Hud.lastNotice==stamp then Hud.banner.Visible=false end end)
 end
-
 function Hud.renderStiltGauge(state)
-	local rows = {"LAPAKMU • " .. #state.stalls .. " SLOT"}
-	local lowest = 5
-	for i, stall in state.stalls do
-		lowest = math.min(lowest, stall.level)
-		local seconds = math.max(0, math.ceil(stall.lockedUntil - workspace:GetServerTimeNow()))
-		local status = stall.flooded and "TERENDAM" or stall.item and "AKTIF" or "KOSONG"
-		if seconds > 0 then status = "KUNCI " .. seconds .. "s" end
-		table.insert(rows, i .. "  L" .. stall.level .. "  " .. status)
-	end
-	Hud.lowest = lowest
-	Hud.stallText.Text = table.concat(rows, "\n")
-	Hud.stalls.Size = UDim2.fromOffset(202, 52 + #state.stalls * 20)
-	Hud.stallText.Size = UDim2.new(1, -24, 1, -24)
+	Hud.gauge.Text="ROB "..math.ceil(state.water).." / TIANG "..state.stilt.."\n"..(state.night and "MALAM" or "SENJA").." · KUNCI "..math.ceil(state.lock).."d"
 end
-
-function Hud.showTideWarning()
-	local level = workspace:GetAttribute("TideLevel") or 0
-	local night = workspace:GetAttribute("Night")
-	local seconds = workspace:GetAttribute("CycleRemaining") or 180
-	Hud.clock.Text = (night and "MALAM • SURUT " or "SENJA • ROB DALAM ") .. seconds .. "s"
-	Hud.tide.Text = "AIR " .. level .. " / 5  •  TIANG TERENDAH L" .. Hud.lowest
-	Hud.banner.Text = night and (level >= 3 and "BANJIR ROB RISING!\nKUNCI & NAIKKAN TIANG" or "BANJIR ROB RISING!") or ""
-end
-
-function Hud.render(state)
+function Hud.update(state)
 	Hud.renderCash(state.cash)
-	Hud.renderIncomeRate(state.income, state.branches)
+	Hud.renderIncomeRate(state.rate,state.branches)
 	Hud.renderStiltGauge(state)
-	if state.carried then
-		Hud.carry.Text = "MEMBAWA " .. Catalog.Characters[state.carried.id].name .. " • E di lapak kosong"
-	elseif #state.selected > 0 then
-		Hud.carry.Text = "BAHAN: LAPAK " .. table.concat(state.selected, " + ") .. " • E di Gerobak Fusion"
-	else Hud.carry.Text = "E KLAIM / TARUH     F BAHAN     R TIANG     T KUNCI" end
-	Hud.showTideWarning()
+	Hud.timer.Text="GONDOLA BERIKUTNYA: "..state.gondola
+	Hud.pity.Text="Jaminan Epic: "..state.epicPity.."/15\nLegendary: "..state.legendPity.."/40"
+	local market=workspace:FindFirstChild("Market")
+	local board=market and market:FindFirstChild("PeluangLotre")
+	local surface=board and board:FindFirstChildOfClass("SurfaceGui")
+	if surface then
+		local text=surface:FindFirstChildOfClass("TextLabel")
+		if text then
+			local original=text:GetAttribute("OriginalText") or text.Text
+			text:SetAttribute("OriginalText",original)
+			text.Text=original:gsub("Jaminan Epic 15 / Legendary 40 · lihat HUD pribadi","Jaminan Epic: "..state.epicPity.."/15 · Legendary: "..state.legendPity.."/40")
+		end
+	end
+	local nextStep
+	if state.boss then nextStep="KEJAR TIKUS RAJA — klik / ketuk badannya!"
+	elseif state.carry then nextStep="Bawa "..Catalog.byId[state.carry.id].name.." ke pedestal kosong [E]"
+	elseif state.spinning then nextStep="Lampu berputar… tunggu hadiah Kios Lotre!"
+	elseif state.pendingPrize then nextStep="Ambil hadiahmu di podium Kios Lotre [E]"
+	elseif (state.night or state.phase>150) and state.stilt<5 then nextStep="Naikkan tiang sebelum Banjir Rob [R]"
+	elseif #state.selection==2 then nextStep="Bawa pilihanmu ke Gerobak Fusion [E]"
+	elseif state.rate<=0 then nextStep="Klaim Kakek Kangkung $10 dari gondola [E]"
+	else nextStep="Putar Kios Lotre — jaminan Epic "..state.epicPity.."/15" end
+	Hud.next.Text="LANGKAH BERIKUTNYA: "..nextStep
 end
-
 return Hud

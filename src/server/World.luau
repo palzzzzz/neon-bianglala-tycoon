@@ -1,171 +1,109 @@
+local Models = require(game.ReplicatedStorage.Shared.BrainrotModels)
 local World = {}
-local warm = Color3.fromRGB(255, 181, 75)
-local pink = Color3.fromRGB(255, 81, 156)
-local teal = Color3.fromRGB(49, 225, 217)
-local dark = Color3.fromRGB(40, 33, 65)
-
-function World.part(parent, name, size, cf, color, material)
-	local p = Instance.new("Part")
-	p.Name = name
-	p.Anchored = true
-	p.Size = size
-	p.CFrame = cf
-	p.Color = color
-	p.Material = material or Enum.Material.SmoothPlastic
-	p.TopSurface = Enum.SurfaceType.Smooth
-	p.BottomSurface = Enum.SurfaceType.Smooth
-	p.Parent = parent
-	return p
+function World.create()
+	local lighting=game:GetService("Lighting")
+	lighting.ClockTime,lighting.Brightness,lighting.ExposureCompensation=16.2,2.2,0.05
+	lighting.Ambient=Color3.fromRGB(151,145,173)
+	lighting.OutdoorAmbient=Color3.fromRGB(174,177,199)
+	lighting.GlobalShadows=false
+	local atmosphere=Instance.new("Atmosphere")
+	atmosphere.Density,atmosphere.Haze,atmosphere.Color=0.12,0.35,Color3.fromRGB(255,222,204)
+	atmosphere.Parent=lighting
+	local bloom=Instance.new("BloomEffect")
+	bloom.Intensity,bloom.Size,bloom.Threshold=0.2,20,1.7
+	bloom.Parent=lighting
+	local old = workspace:FindFirstChild("Market")
+	if old then old:Destroy() end
+	local baseplate = workspace:FindFirstChild("Baseplate")
+	if baseplate then baseplate:Destroy() end
+	local root = Instance.new("Folder")
+	root.Name, root.Parent = "Market", workspace
+	local function part(name,size,pos,color,material)
+		local p = Models.part(root,name,size,CFrame.new(pos),color,material)
+		p.CanCollide = true
+		return p
+	end
+	local palette = {Color3.fromRGB(255,137,139),Color3.fromRGB(255,205,113),Color3.fromRGB(103,212,203)}
+	part("Island",Vector3.new(230,8,210),Vector3.new(0,-4,0),Color3.fromRGB(218,183,145))
+	part("Plaza",Vector3.new(120,0.3,135),Vector3.new(0,0.15,5),Color3.fromRGB(241,210,181))
+	local sea = part("Sea",Vector3.new(1600,1,1600),Vector3.new(0,-3,0),Color3.fromRGB(57,170,184),Enum.Material.Glass)
+	sea.CanCollide = false
+	local water = part("BanjirRob",Vector3.new(232,0.3,212),Vector3.new(0,-1,0),Color3.fromRGB(51,211,211),Enum.Material.Glass)
+	water.CanCollide, water.Transparency = false, 0.35
+	local spawn = Instance.new("SpawnLocation")
+	spawn.Name, spawn.Size, spawn.CFrame = "MarketSpawn", Vector3.new(14,1,12), CFrame.new(0,1,75)
+	spawn.Anchored, spawn.Neutral, spawn.Duration = true,true,0
+	spawn.Color, spawn.Material = palette[3], Enum.Material.Neon
+	spawn.Parent = root
+	local welcome = part("Welcome",Vector3.new(24,8,1),Vector3.new(0,9,90),palette[1])
+	local welcomeLabel=Models.label(welcome,"BIANGLALA BRAINROT","KLAIM → LAPAK → FUSION",Color3.new(1,1,1),0)
+	welcomeLabel.Size=UDim2.fromOffset(540,105)
+	welcomeLabel.TextLabel.TextSize=34
+	local wheel = Instance.new("Model")
+	wheel.Name, wheel.Parent = "Bianglala", root
+	local center = Vector3.new(0,46,-22)
+	for _, x in {-13,13} do
+		local support = part("WheelSupport",Vector3.new(3,51,4),Vector3.new(x,23,-17),Color3.fromRGB(111,91,173))
+		support.CFrame *= CFrame.Angles(0,0,x>0 and 0.25 or -0.25)
+	end
+	local hub = part("Hub",Vector3.one*7,center,Color3.fromRGB(255,225,103),Enum.Material.Neon)
+	hub.Shape = Enum.PartType.Ball
+	for i=1,48 do
+		local a,b = i*math.pi/24,(i+1)*math.pi/24
+		local p,q = center+Vector3.new(math.cos(a)*40,math.sin(a)*40,0),center+Vector3.new(math.cos(b)*40,math.sin(b)*40,0)
+		local beam = Models.part(wheel,"Rim",Vector3.new(1,1,(p-q).Magnitude),CFrame.lookAt((p+q)/2,q),palette[(i%3)+1],Enum.Material.Neon)
+		beam.CanCollide = false
+	end
+	for i=1,12 do
+		local a=i*math.pi/6
+		local endPoint=center+Vector3.new(math.cos(a)*39,math.sin(a)*39,0)
+		Models.part(wheel,"Spoke",Vector3.new(0.4,0.4,39),CFrame.lookAt((center+endPoint)/2,endPoint),palette[2],Enum.Material.Neon)
+	end
+	-- Broad zig-zag stairways give access to the side and top claim decks.
+	for flight=0,3 do
+		for step=1,20 do
+			local y=flight*20+step
+			local z=flight%2==0 and (43-step*3) or (-17+step*3)
+			part("ClaimStair",Vector3.new(11,1.1,3.3),Vector3.new(48+flight*5,y,z),palette[2])
+		end
+		local z=flight%2==0 and -17 or 43
+		part("Landing",Vector3.new(17,1,13),Vector3.new(50+flight*5,(flight+1)*20,z),palette[3])
+	end
+	part("SkyBridge",Vector3.new(73,1,11),Vector3.new(31,81,-17),palette[1])
+	part("TopLandingWalkway",Vector3.new(11,1,71),Vector3.new(63,81,13),palette[2])
+	part("TopClaimDeck",Vector3.new(18,1,18),Vector3.new(0,81,-17),palette[3])
+	local fusion=part("FusionCart",Vector3.new(13,4,8),Vector3.new(-43,2,27),palette[1])
+	Models.label(fusion,"GEROBAK FUSION","Pilih 2 bahan di lapak [F]",Color3.fromRGB(255,238,171),5)
+	for _, x in {-47,-39} do part("IngredientTray",Vector3.new(3,0.4,3),Vector3.new(x,4.3,27),palette[2],Enum.Material.Neon) end
+	local branch=part("BranchGate",Vector3.new(24,4,4),Vector3.new(0,3,-83),palette[2])
+	Models.label(branch,"BUKA CABANG","$250.000 lifetime → income ×2",Color3.new(1,1,1),5)
+	part("PhotoStage",Vector3.new(22,2,16),Vector3.new(75,1,65),palette[1])
+	for i=1,8 do
+		if i==2 then continue end -- Keep the spawn and its camera approach unobstructed.
+		local a=i*math.pi/4
+		local p=Vector3.new(math.cos(a)*96,0,math.sin(a)*82)
+		part("MarketTent",Vector3.new(12,1,9),p+Vector3.new(0,9,0),palette[i%3+1])
+		part("MarketCounter",Vector3.new(10,3,6),p+Vector3.new(0,1.5,0),palette[(i+1)%3+1])
+		for _, side in {-1,1} do part("TentPole",Vector3.new(0.6,9,0.6),p+Vector3.new(side*5,4.5,0),Color3.fromRGB(108,79,99)) end
+		local lantern=part("Lantern",Vector3.one*1.5,p+Vector3.new(0,11,0),palette[i%3+1],Enum.Material.Neon)
+		local light=Instance.new("PointLight")
+		light.Brightness,light.Range,light.Color=2,28,palette[2]
+		light.Parent=lantern
+	end
+	return {root=root,water=water,center=center,fusion=fusion,branch=branch,spawn=spawn}
 end
-
-function World.sign(parent, text, size, cf, color)
-	local p = World.part(parent, "Sign", size, cf, dark)
-	local gui = Instance.new("SurfaceGui")
-	gui.Face = Enum.NormalId.Front
-	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-	gui.PixelsPerStud = 35
-	gui.Parent = p
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(0.94, 0.9)
-	label.Position = UDim2.fromScale(0.03, 0.05)
-	label.BackgroundTransparency = 1
-	label.Text = text
-	label.TextColor3 = color or warm
-	label.Font = Enum.Font.FredokaOne
-	label.TextScaled = true
-	label.Parent = gui
-	return p, label
-end
-
-function World.prompt(parent, action, object, key, callback)
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.ActionText = action
-	prompt.ObjectText = object
+function World.prompt(part, action, key, callback, distance)
+	local prompt=Instance.new("ProximityPrompt")
+	prompt.ActionText, prompt.ObjectText = action,part.Name
 	prompt.KeyboardKeyCode = key or Enum.KeyCode.E
-	prompt.MaxActivationDistance = 13
-	prompt.RequiresLineOfSight = false
-	prompt.HoldDuration = 0.2
-	prompt.Parent = parent
-	prompt.Triggered:Connect(callback)
+	prompt.MaxActivationDistance, prompt.RequiresLineOfSight = distance or 12,false
+	prompt.HoldDuration = 0.12
+	prompt.Parent=part
+	prompt.Triggered:Connect(function(player)
+		local character=player.Character
+		local root=character and character:FindFirstChild("HumanoidRootPart")
+		if root and (root.Position-part.Position).Magnitude <= prompt.MaxActivationDistance+3 then callback(player) end
+	end)
 	return prompt
 end
-
-function World.beam(parent, a, b, width, color, material)
-	return World.part(parent, "Strut", Vector3.new(width, width, (b - a).Magnitude), CFrame.lookAt((a + b) / 2, b), color, material)
-end
-
-function World.build()
-	local old = workspace:FindFirstChild("Baseplate")
-	if old then old:Destroy() end
-	local root = Instance.new("Folder")
-	root.Name = "PasarMalam"
-	root.Parent = workspace
-	World.root = root
-	World.part(root, "Island", Vector3.new(245, 10, 225), CFrame.new(0, -5, 0), Color3.fromRGB(63, 66, 78), Enum.Material.Slate)
-	World.part(root, "Plaza", Vector3.new(218, 0.4, 200), CFrame.new(0, 0.2, 0), Color3.fromRGB(89, 66, 86), Enum.Material.Cobblestone)
-	World.part(root, "MainPromenade", Vector3.new(20, 0.15, 170), CFrame.new(0, 0.5, -5), Color3.fromRGB(183, 132, 107), Enum.Material.Brick)
-	World.part(root, "FusionPromenade", Vector3.new(140, 0.15, 14), CFrame.new(0, 0.55, -28), Color3.fromRGB(183, 132, 107), Enum.Material.Brick)
-	for _, x in {-11, 11} do
-		World.part(root, "PromenadeEdge", Vector3.new(0.25, 0.18, 170), CFrame.new(x, 0.65, -5), warm, Enum.Material.Neon)
-	end
-	World.water = World.part(root, "BanjirRob", Vector3.new(900, 2, 900), CFrame.new(0, -3, 0), Color3.fromRGB(23, 165, 175), Enum.Material.Glass)
-	World.water.Transparency = 0.35
-	World.water.CanCollide = false
-	local spawn = Instance.new("SpawnLocation")
-	spawn.Name = "PasarSpawn"
-	spawn.Anchored = true
-	spawn.Size = Vector3.new(12, 1, 12)
-	spawn.CFrame = CFrame.new(0, 1, -84) * CFrame.Angles(0, math.pi, 0)
-	spawn.Color = teal
-	spawn.Neutral = true
-	spawn.Duration = 0
-	spawn.Material = Enum.Material.Neon
-	spawn.Parent = root
-	World.sign(root, "BIANGLALA\nBRAINROT", Vector3.new(57, 14, 2), CFrame.new(0, 79, 14), warm)
-	World.sign(root, "KLAIM → LAPAK → FUSION\nNaik tangga • E ambil • E taruh • F pilih bahan", Vector3.new(36, 5, 1), CFrame.new(0, 7, -98) * CFrame.Angles(0, math.pi, 0), teal)
-	for _, z in {-3, 10} do
-		World.beam(root, Vector3.new(-26, 1, z), Vector3.new(0, 43, z), 2.6, pink, Enum.Material.Metal)
-		World.beam(root, Vector3.new(26, 1, z), Vector3.new(0, 43, z), 2.6, pink, Enum.Material.Metal)
-	end
-	World.part(root, "Axle", Vector3.new(5, 5, 23), CFrame.new(0, 43, 3), warm, Enum.Material.Neon)
-	World.wheelCenter = Vector3.new(0, 43, 0)
-	World.rotor = Instance.new("Model")
-	World.rotor.Name = "BianglalaNeon"
-	World.rotor.Parent = root
-	for i = 1, 48 do
-		local a, b = i * math.pi / 24, (i + 1) * math.pi / 24
-		for _, z in {-2, 6} do
-			World.beam(World.rotor, Vector3.new(math.cos(a) * 36, 43 + math.sin(a) * 36, z), Vector3.new(math.cos(b) * 36, 43 + math.sin(b) * 36, z), 0.65, i % 2 == 0 and pink or teal, Enum.Material.Neon)
-		end
-		if i % 4 == 0 then World.beam(World.rotor, World.wheelCenter, World.wheelCenter + Vector3.new(math.cos(a) * 36, math.sin(a) * 36, 0), 0.6, warm, Enum.Material.Neon) end
-	end
-	World.rotor.WorldPivot = CFrame.new(World.wheelCenter)
-	for i = 1, 32 do
-		local x = 42 + math.floor((i - 1) / 16) * 12
-		local z = -66 + ((i - 1) % 16) * 3.5
-		if i > 16 then z = -13.5 - ((i - 1) % 16) * 3.5 end
-		World.part(root, "ClaimStair", Vector3.new(12, 1.3, 4), CFrame.new(x, i * 1.25, z), Color3.fromRGB(104, 77, 118))
-	end
-	for _, y in {3, 21, 41} do
-		World.part(root, "ClaimLanding", Vector3.new(26, 1, 15), CFrame.new(41, y, -12), dark)
-		World.part(root, "ClaimRing", Vector3.new(19, 0.18, 0.5), CFrame.new(38, y + 0.6, -18), teal, Enum.Material.Neon)
-	end
-	World.part(root, "UpperClaimWalkway", Vector3.new(12, 1, 58), CFrame.new(54, 41, -39), dark)
-	World.part(root, "UpperSafetyRail", Vector3.new(0.4, 3, 58), CFrame.new(60, 43, -39), teal, Enum.Material.Neon)
-	World.sign(root, "KLAIM GONDOLA\nATAS = PELUANG LANGKA", Vector3.new(27, 6, 1), CFrame.new(46, 48, -3), teal)
-	World.fusion = World.part(root, "GerobakFusion", Vector3.new(15, 4, 9), CFrame.new(-65, 3, -28), Color3.fromRGB(137, 57, 131))
-	World.sign(root, "GEROBAK FUSION\n2 BAHAN → 1 KEAJAIBAN", Vector3.new(24, 7, 1), CFrame.new(-65, 13, -24), pink)
-	for _, x in {-69, -61} do
-		World.part(root, "IngredientSlot", Vector3.new(5, 0.4, 5), CFrame.new(x, 5.3, -28), teal, Enum.Material.Neon)
-		local wheel = World.part(root, "CartWheel", Vector3.new(3, 3, 1), CFrame.new(x, 1.5, -33), dark)
-		wheel.Shape = Enum.PartType.Cylinder
-		wheel.CFrame *= CFrame.Angles(0, math.pi / 2, 0)
-	end
-	World.rebirth = World.sign(root, "BUKA CABANG\nIncome permanen +1× • Lapak +2", Vector3.new(34, 9, 2), CFrame.new(0, 10, 87), warm)
-	World.part(root, "PhotoStage", Vector3.new(26, 2, 18), CFrame.new(82, 1, -75), dark)
-	World.sign(root, "PASAR MALAM\nBIANGLALA BRAINROT", Vector3.new(28, 12, 1), CFrame.new(82, 9, -66), pink)
-	for i = 1, 14 do
-		local x = -104 + (i - 1) * 16
-		for _, z in {-104, 100} do
-			World.part(root, "LanternPost", Vector3.new(0.6, 18, 0.6), CFrame.new(x, 9, z), dark)
-			local lamp = World.part(root, "Lantern", Vector3.new(2, 2.5, 2), CFrame.new(x, 18, z), i % 2 == 0 and pink or warm, Enum.Material.Neon)
-			local light = Instance.new("PointLight")
-			light.Color = lamp.Color
-			light.Range = 25
-			light.Brightness = 0.7
-			light.Parent = lamp
-		end
-	end
-	for i = 1, 7 do
-		local x = -100 + i * 25
-		World.beam(root, Vector3.new(x, 18, -104), Vector3.new(x, 18, 100), 0.1, dark)
-		for j = 1, 10 do
-			local lamp = World.part(root, "FestoonBulb", Vector3.new(0.8, 0.8, 0.8), CFrame.new(x, 18 - math.sin(j / 11 * math.pi) * 3, -104 + j * 18), Color3.fromHSV((i + j) / 18, 0.7, 1), Enum.Material.Neon)
-			lamp.Shape = Enum.PartType.Ball
-		end
-	end
-	for _, x in {-93, 93} do
-		for _, z in {-20, 18, 55} do
-			World.part(root, "Warung", Vector3.new(13, 4, 9), CFrame.new(x, 2, z), Color3.fromRGB(140, 79, 65))
-			for stripe = -3, 3 do World.part(root, "StripedCanopy", Vector3.new(2, 0.5, 12), CFrame.new(x + stripe * 2, 10, z), stripe % 2 == 0 and warm or pink) end
-			for _, dx in {-6, 6} do World.part(root, "TentPost", Vector3.new(0.4, 10, 0.4), CFrame.new(x + dx, 5, z), warm) end
-		end
-	end
-	local lighting = game:GetService("Lighting")
-	local atmosphere = Instance.new("Atmosphere")
-	atmosphere.Density = 0.22
-	atmosphere.Color = Color3.fromRGB(213, 182, 232)
-	atmosphere.Parent = lighting
-	local bloom = Instance.new("BloomEffect")
-	bloom.Intensity = 0.35
-	bloom.Size = 24
-	bloom.Threshold = 1.2
-	bloom.Parent = lighting
-	local correction = Instance.new("ColorCorrectionEffect")
-	correction.Saturation = 0.12
-	correction.Contrast = 0.08
-	correction.Parent = lighting
-	return World
-end
-
 return World

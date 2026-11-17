@@ -1,101 +1,88 @@
-local Catalog = require(game.ReplicatedStorage.Shared.Catalog)
-local Models = require(game.ReplicatedStorage.Shared.BrainrotModels)
-local World = require(script.Parent.World)
-local Economy = require(script.Parent.EconomyService)
-local Stall = {plots = {}}
-
-function Stall.refresh(player, profile, index)
-	local plot = Stall.plots[player]
-	local slot = plot.slots[index]
-	local data = profile.stalls[index]
-	local y = 2 + (data.level - 1) * 3.5
-	slot.pedestal.Position = slot.origin + Vector3.new(0, y, 0)
-	slot.pillar.Size = Vector3.new(6, y, 6)
-	slot.pillar.Position = slot.origin + Vector3.new(0, y / 2, 0)
-	if slot.model then slot.model:Destroy() slot.model = nil end
-	if data.item then
-		slot.model = Models.create(data.item, plot.folder)
-		slot.model:PivotTo(CFrame.new(slot.origin + Vector3.new(0, y + 3, 0)))
-		slot.model:SetAttribute("IdleBase", slot.model:GetPivot())
-		slot.model:SetAttribute("Dancing", Catalog.Characters[data.item.id].effect == "dance")
+local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
+local Models=require(game.ReplicatedStorage.Shared.BrainrotModels)
+local Economy=require(script.Parent.EconomyService)
+local World=require(script.Parent.World)
+local Stalls={plots={},views={}}
+function Stalls.freeSlots(profile)
+	local n=0
+	for _,stall in profile.stalls do if not stall.catch then n+=1 end end
+	return n
+end
+function Stalls.placeBrainrot(profile,index)
+	local stall=profile.stalls[index]
+	if not stall or stall.catch or not profile.carry then return false end
+	stall.catch,profile.carry=profile.carry,nil
+	return true
+end
+function Stalls.upgradeStilts(profile,index)
+	local stall=profile.stalls[index]
+	if not stall or stall.level>=5 then return false end
+	if not Economy.spendCash(profile,Catalog.stiltPrices[stall.level+1]) then return false end
+	stall.level+=1
+	return true
+end
+function Stalls.lockStall(profile,index,now)
+	local stall=profile.stalls[index]
+	if not stall or (stall.readyAt or 0)>now then return false end
+	if not Economy.spendCash(profile,50) then return false end
+	stall.lockUntil,stall.readyAt=now+60,now+90
+	return true
+end
+function Stalls.select(profile,index)
+	if not profile.stalls[index].catch then return end
+	profile.selection=profile.selection or {}
+	local at=table.find(profile.selection,index)
+	if at then table.remove(profile.selection,at)
+	elseif #profile.selection<2 then table.insert(profile.selection,index)
+	else profile.selection={index} end
+end
+function Stalls.refresh(player,profile,context)
+	local plot=Stalls.plots[player]
+	if not plot then
+		local occupied={}
+		for _,p in Stalls.plots do occupied[p.number]=true end
+		local number=1
+		while occupied[number] do number+=1 end
+		plot={number=number,origin=Vector3.new(number%2==1 and -76 or 77,0,-54+math.floor((number-1)/2)*43)}
+		Stalls.plots[player]=plot
 	end
-	slot.label.Text = "LAPAK " .. index .. " • L" .. data.level .. "\n" .. (data.item and Catalog.money(Catalog.rate(data.item)) .. "/s" or "E: TARUH")
-	slot.pedestal.Color = data.lockedUntil > workspace:GetServerTimeNow() and Color3.fromRGB(66, 235, 216) or Color3.fromRGB(244, 182, 80)
-end
-
-function Stall.placeBrainrot(player, profile, index, notify)
-	local stall = profile.stalls[index]
-	if profile.carried and not stall.item then
-		stall.item, profile.carried = profile.carried, nil
-		Stall.refresh(player, profile, index)
-		notify(player, "Sudah di lapak. Income mulai berdetak!", "claim")
-	elseif stall.item and not profile.carried then
-		profile.carried, stall.item = stall.item, nil
-		profile.selected = {}
-		Stall.refresh(player, profile, index)
-		notify(player, "Dibawa. Taruh di lapak kosong dengan E.")
-	else
-		notify(player, "Bawa satu karakter, lalu pilih lapak kosong.")
-	end
-end
-
-function Stall.upgradeStilts(player, profile, index, notify)
-	local stall = profile.stalls[index]
-	if stall.level >= 5 then notify(player, "Tiang sudah aman penuh!") return end
-	local cost = Catalog.StiltCosts[stall.level + 1]
-	if not Economy.spendCash(profile, cost) then notify(player, "Butuh " .. Catalog.money(cost) .. " untuk tiang berikutnya.") return end
-	stall.level += 1
-	Stall.refresh(player, profile, index)
-	notify(player, "Tiang naik ke L" .. stall.level, "claim")
-end
-
-function Stall.lockStall(player, profile, index, notify)
-	local stall = profile.stalls[index]
-	local now = workspace:GetServerTimeNow()
-	if now < stall.cooldownUntil then notify(player, "Kunci belum siap lagi.") return end
-	if not Economy.spendCash(profile, 50) then notify(player, "Kunci membutuhkan $50.") return end
-	stall.lockedUntil = now + 60
-	stall.cooldownUntil = now + 90
-	Stall.refresh(player, profile, index)
-	notify(player, "Terkunci 60 detik. Tikus akan kecele.")
-end
-
-function Stall.buildPlot(player, profile, plotIndex, notify)
-	local folder = Instance.new("Folder")
-	folder.Name = "Lapak_" .. player.UserId
-	folder.Parent = World.root
-	local origin = Vector3.new((plotIndex - 1) % 3 * 65 - 65, 0, 40 + math.floor((plotIndex - 1) / 3) * 40)
-	local plot = {folder = folder, slots = {}, origin = origin}
-	Stall.plots[player] = plot
-	World.sign(folder, player.DisplayName .. " • PASAR\nE taruh/ambil   F bahan   R tiang   T kunci", Vector3.new(28, 5, 1), CFrame.new(origin + Vector3.new(0, 7, 13)), Color3.fromRGB(255, 210, 103))
-	for i, _ in profile.stalls do
-		local pos = origin + Vector3.new(((i - 1) % 3 - 1) * 10, 0, math.floor((i - 1) / 3) * 11)
-		local pillar = World.part(folder, "Tiang" .. i, Vector3.new(6, 2, 6), CFrame.new(pos + Vector3.new(0, 1, 0)), Color3.fromRGB(106, 65, 80), Enum.Material.WoodPlanks)
-		local pedestal = World.part(folder, "Pedestal" .. i, Vector3.new(8, 0.7, 8), CFrame.new(pos + Vector3.new(0, 2, 0)), Color3.fromRGB(244, 182, 80))
-		local control, label = World.sign(folder, "", Vector3.new(7, 2, 0.5), CFrame.new(pos + Vector3.new(0, 2, -4.5)), Color3.fromRGB(255, 230, 170))
-		plot.slots[i] = {origin = pos, pedestal = pedestal, pillar = pillar, label = label, control = control}
-		local function own(visitor, callback)
-			if visitor ~= player then notify(visitor, "Ini lapak pemain lain.") return end
-			local root = visitor.Character and visitor.Character:FindFirstChild("HumanoidRootPart")
-			if root and (root.Position - control.Position).Magnitude <= 17 then callback() end
+	if Stalls.views[player] then Stalls.views[player]:Destroy() end
+	local folder=Instance.new("Folder")
+	folder.Name="Lapak_"..player.UserId
+	folder.Parent=context.world.root
+	Stalls.views[player]=folder
+	for index,stall in profile.stalls do
+		local pos=plot.origin+Vector3.new(((index-1)%3-1)*11,stall.level==5 and 17 or (stall.level-1)*3+2,math.floor((index-1)/3)*11)
+		stall.position=pos
+		local base=Models.part(folder,"Pedestal_"..index,Vector3.new(9,1,9),CFrame.new(pos),Color3.fromRGB(255,196,128))
+		base.CanCollide=true
+		local rim=Models.part(folder,"PedestalGlow",Vector3.new(9.3,0.25,9.3),CFrame.new(pos+Vector3.new(0,0.65,0)),stall.catch and Catalog.colors[Catalog.byId[stall.catch.id].rarity] or Color3.fromRGB(129,233,219),Enum.Material.Neon)
+		local glow=Instance.new("PointLight");glow.Color=rim.Color;glow.Range=13;glow.Brightness=1.2;glow.Parent=rim
+		for _,dx in {-3,3} do
+			Models.part(folder,"Tiang",Vector3.new(0.8,pos.Y,0.8),CFrame.new(pos.X+dx,pos.Y/2,pos.Z),Color3.fromRGB(108,82,118))
 		end
-		World.prompt(control, "Taruh / ambil", "Lapak " .. i, Enum.KeyCode.E, function(visitor) own(visitor, function() Stall.placeBrainrot(player, profile, i, notify) end) end)
-		World.prompt(control, "Naikkan tiang", "Lapak " .. i, Enum.KeyCode.R, function(visitor) own(visitor, function() Stall.upgradeStilts(player, profile, i, notify) end) end)
-		World.prompt(control, "Kunci $50", "Lapak " .. i, Enum.KeyCode.T, function(visitor) own(visitor, function() Stall.lockStall(player, profile, i, notify) end) end)
-		World.prompt(control, "Pilih bahan fusion", "Lapak " .. i, Enum.KeyCode.F, function(visitor)
-			own(visitor, function()
-				if not profile.stalls[i].item then return end
-				local found = table.find(profile.selected, i)
-				if found then table.remove(profile.selected, found) else
-					if #profile.selected == 2 then table.remove(profile.selected, 1) end
-					table.insert(profile.selected, i)
-				end
-				notify(player, "Bahan dipilih: " .. table.concat(profile.selected, " + ") .. ". Pergi ke Gerobak Fusion.")
-			end)
-		end)
-		Stall.refresh(player, profile, i)
+		local selected=profile.selection and table.find(profile.selection,index)
+		Models.label(base,player.DisplayName.." · "..index,"L"..stall.level..(selected and " · BAHAN ✓" or ""),Color3.fromRGB(255,245,208),1)
+		if stall.catch then
+			local model=Models.build(stall.catch,folder)
+			model:PivotTo(CFrame.new(pos+Vector3.new(0,2.6,0)))
+			model:SetAttribute("Idle",true)
+		end
+		-- Ground-level controls remain reachable even when the pedestal is elevated.
+		local control=Models.part(folder,"Kontrol_"..index,Vector3.new(2,2,1),CFrame.new(pos.X,2,pos.Z+5),Color3.fromRGB(95,207,193),Enum.Material.Neon)
+		local function mine(visitor,action)
+			if visitor~=player then return end
+			action()
+			context.changed(player)
+		end
+		World.prompt(control,"Taruh bawaan",Enum.KeyCode.E,function(visitor) mine(visitor,function() Stalls.placeBrainrot(profile,index) end) end)
+		World.prompt(control,"Tiang "..(stall.level<5 and "$"..Catalog.stiltPrices[stall.level+1] or "MAX"),Enum.KeyCode.R,function(visitor) mine(visitor,function() Stalls.upgradeStilts(profile,index) end) end)
+		World.prompt(control,"Kunci $50 / 60 detik",Enum.KeyCode.T,function(visitor) mine(visitor,function() Stalls.lockStall(profile,index,os.clock()) end) end)
+		World.prompt(control,"Pilih bahan fusion",Enum.KeyCode.F,function(visitor) mine(visitor,function() Stalls.select(profile,index) end) end)
 	end
-	return plot
 end
-
-return Stall
+function Stalls.remove(player)
+	if Stalls.views[player] then Stalls.views[player]:Destroy() end
+	Stalls.views[player],Stalls.plots[player]=nil,nil
+end
+return Stalls

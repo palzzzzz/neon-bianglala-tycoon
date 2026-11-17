@@ -1,67 +1,59 @@
-local Catalog = require(game.ReplicatedStorage.Shared.Catalog)
-local Models = require(game.ReplicatedStorage.Shared.BrainrotModels)
-local World = require(script.Parent.World)
-local Claim = require(script.Parent.ClaimService)
-local Wheel = {gondolas = {}, elapsed = 0}
-local rng = Random.new()
-
-function Wheel.stockGondola(gondola, starter)
-	local high = gondola.floor.Position.Y > 62
-	local roll = rng:NextNumber()
+local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
+local Models=require(game.ReplicatedStorage.Shared.BrainrotModels)
+local World=require(script.Parent.World)
+local Claim=require(script.Parent.ClaimService)
+local Wheel={gondolas={},rng=Random.new()}
+function Wheel.stockGondola(gondola,context)
+	local upper=gondola.base.Position.Y>70
+	local r=Wheel.rng:NextNumber()
 	local rarity
-	if high then
-		rarity = roll < 0.03 and "Mythic" or roll < 0.2 and "Legendary" or roll < 0.7 and "Epic" or "Rare"
-	else
-		rarity = roll < 0.8 and "Common" or "Rare"
-	end
-	local list = Catalog.Stock[rarity]
-	local id = starter or list[rng:NextInteger(1, #list)]
-	gondola.item = {id = id}
-	gondola.character = Models.create(gondola.item, gondola.model)
-	gondola.character:ScaleTo(0.85)
-	gondola.prompt.ObjectText = Catalog.Characters[id].name .. " • " .. Catalog.money(Catalog.Characters[id].price)
-	gondola.prompt.Enabled = true
-	gondola.restockAt = nil
-	gondola.stockedAt = workspace:GetServerTimeNow()
-	gondola.floor.Color = Catalog.Rarities[Catalog.Characters[id].rarity]
+	if upper then rarity=r<0.08 and "Mythic" or r<0.35 and "Legendary" or "Epic"
+	else rarity=r<0.78 and "Common" or "Rare" end
+	local id=Catalog.pick(rarity,Wheel.rng)
+	-- A dependable inexpensive starting point is always available on cabin one.
+	if gondola.index==1 then id="kangkung" end
+	gondola.catch={id=id,mutation="Normal"}
+	gondola.display=Models.build(gondola.catch,gondola.model)
+	gondola.display:PivotTo(gondola.base.CFrame*CFrame.new(0,2.7,0))
+	gondola.prompt.ActionText="Klaim $"..Catalog.byId[id].price
+	gondola.prompt.ObjectText=Catalog.byId[id].name
+	gondola.prompt.Enabled=true
 end
-
-function Wheel.build(profiles, notify)
-	for i = 1, 12 do
-		local angle = (i - 1) * math.pi / 6 - math.pi / 2
-		local pos = World.wheelCenter + Vector3.new(math.cos(angle) * 36, math.sin(angle) * 36, -7)
-		local model = Instance.new("Model")
-		model.Name = "Gondola" .. i
-		model.Parent = World.root
-		local floor = World.part(model, "ClaimFloor", Vector3.new(8, 0.7, 6), CFrame.new(pos), Catalog.Rarities.Common)
-		model.PrimaryPart = floor
-		for _, x in {-3.6, 3.6} do World.part(model, "Post", Vector3.new(0.3, 6, 0.3), CFrame.new(pos + Vector3.new(x, 3, 2.5)), Color3.fromRGB(255, 194, 104)) end
-		World.part(model, "Roof", Vector3.new(8.5, 0.5, 6.5), CFrame.new(pos + Vector3.new(0, 6, 0)), Color3.fromRGB(229, 76, 142), Enum.Material.Neon)
-		local gondola = {model = model, floor = floor, offset = angle}
-		gondola.prompt = World.prompt(floor, "Klaim & bawa", "", Enum.KeyCode.E, function(player)
-			if profiles[player] then Claim.claimFromGondola(player, profiles[player], gondola, notify) end
-		end)
-		Wheel.stockGondola(gondola, i <= 3 and ({"Kangkung", "Lemper", "Boba"})[i] or nil)
-		table.insert(Wheel.gondolas, gondola)
+function Wheel.create(context)
+	for i=1,12 do
+		local model=Instance.new("Model")
+		model.Name="Gondola_"..i
+		local base=Models.part(model,"Deck",Vector3.new(9,0.8,7),CFrame.new(),Color3.fromHSV(i/12,0.45,1),Enum.Material.Neon)
+		base.CanCollide=true
+		model.PrimaryPart=base
+		Models.part(model,"Canopy",Vector3.new(10,0.6,8),CFrame.new(0,8,0),base.Color)
+		for side=-1,1,2 do Models.part(model,"Hanger",Vector3.new(0.35,8,0.35),CFrame.new(side*4,4,2.8),Color3.fromRGB(255,235,184)) end
+		model.Parent=context.world.root
+		local gondola={model=model,base=base,index=i}
+		gondola.prompt=World.prompt(base,"Klaim",Enum.KeyCode.E,function(player) Claim.claimFromGondola(player,gondola,context) end,14)
+		table.insert(Wheel.gondolas,gondola)
 	end
+	Wheel.spinBianglala(0,context)
+	for _,gondola in Wheel.gondolas do Wheel.stockGondola(gondola,context) end
 end
-
-function Wheel.spinBianglala(dt)
-	Wheel.elapsed += dt
-	local angle = Wheel.elapsed * math.pi / 30
-	World.rotor:PivotTo(CFrame.new(World.wheelCenter) * CFrame.Angles(0, 0, angle))
-	for _, gondola in Wheel.gondolas do
-		local a = angle + gondola.offset
-		local pos = World.wheelCenter + Vector3.new(math.cos(a) * 36, math.sin(a) * 36, -7)
-		gondola.model:PivotTo(CFrame.new(pos))
-		if gondola.character then gondola.character:PivotTo(CFrame.new(pos + Vector3.new(0, 2.6 + math.sin(Wheel.elapsed * 2) * 0.15, 0))) end
-		local now = workspace:GetServerTimeNow()
-		if gondola.restockAt and now >= gondola.restockAt then Wheel.stockGondola(gondola) end
-		if gondola.item and now - gondola.stockedAt > 62 then
-			gondola.character:Destroy()
-			Wheel.stockGondola(gondola)
+function Wheel.spinBianglala(elapsed,context)
+	for _,gondola in Wheel.gondolas do
+		local a=(gondola.index-1)*math.pi/6-math.pi/2+elapsed*math.pi/30
+		local position=context.world.center+Vector3.new(math.cos(a)*40,math.sin(a)*40,4)
+		local previous=gondola.base.Position
+		gondola.model:PivotTo(CFrame.new(position))
+		if elapsed>0 then
+			for player in context.data.profiles do
+				local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+				if root then
+					local delta=root.Position-previous
+					if math.abs(delta.X)<4.5 and math.abs(delta.Z)<3.5 and delta.Y>0 and delta.Y<4.5 then
+						root.CFrame+=position-previous
+					end
+				end
+			end
 		end
+		if not gondola.catch and gondola.restockAt and elapsed>=gondola.restockAt then Wheel.stockGondola(gondola,context) end
 	end
 end
-
 return Wheel

@@ -1,135 +1,156 @@
 local Catalog = require(script.Parent.Catalog)
 local Models = {}
-
-local function part(model, name, size, position, color, shape, material)
+function Models.part(parent, name, size, frame, color, material, shape)
 	local p = Instance.new("Part")
-	p.Name = name
-	p.Size = size
-	p.CFrame = CFrame.new(position)
+	p.Name, p.Size, p.CFrame = name, size, frame
 	p.Color = color
-	p.Anchored = true
-	p.CanCollide = false
-	p.CanTouch = false
 	p.Material = material or Enum.Material.SmoothPlastic
 	p.Shape = shape or Enum.PartType.Block
-	p.TopSurface = Enum.SurfaceType.Smooth
-	p.BottomSurface = Enum.SurfaceType.Smooth
-	p.Parent = model
+	p.Anchored, p.CanCollide, p.CanTouch = true, false, false
+	p.TopSurface, p.BottomSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
+	p.Parent = parent
 	return p
 end
-
-function Models.create(item, parent)
-	local data = Catalog.Characters[item.id]
-	local model = Instance.new("Model")
-	model.Name = data.name
-	local color = data.color
-	local neon = Enum.Material.Neon
-	local ball = Enum.PartType.Ball
-	if item.mutation == "Gold" then color = Color3.fromRGB(255, 204, 38) end
-	if item.mutation == "Diamond" then color = Color3.fromRGB(135, 242, 255) end
-	if item.mutation == "Sambal-Lava" then color = Color3.fromRGB(255, 75, 30) end
-	local body = part(model, "Body", Vector3.new(2.4, 2.7, 1.7), Vector3.new(0, 2.5, 0), color, ball)
-	model.PrimaryPart = body
-	for _, x in {-0.7, 0.7} do
-		part(model, "Shoe", Vector3.new(1, 0.65, 1.6), Vector3.new(x, 0.4, -0.3), Color3.fromRGB(54, 35, 65))
-		part(model, "Arm", Vector3.new(0.6, 1.7, 0.7), Vector3.new(x * 2.2, 2.6, 0), color, ball)
-	end
-	local head = part(model, "Head", Vector3.new(2, 1.8, 1.8), Vector3.new(0, 4.1, 0), color, ball)
-	for _, x in {-0.5, 0.5} do
-		part(model, "EyeWhite", Vector3.new(0.65, 0.75, 0.22), Vector3.new(x, 4.3, -0.83), Color3.new(1, 1, 1), ball)
-		part(model, "Pupil", Vector3.new(0.27, 0.38, 0.18), Vector3.new(x + 0.07, 4.28, -0.98), Color3.fromRGB(25, 19, 42), ball)
-	end
-	part(model, "Grin", Vector3.new(0.8, 0.15, 0.16), Vector3.new(0, 3.78, -0.94), Color3.fromRGB(42, 22, 37))
-	local shape = data.shape
-	if shape == "cup" then
-		body.Shape = Enum.PartType.Cylinder
-		body.Size = Vector3.new(2.7, 2.5, 2.5)
-		body.CFrame *= CFrame.Angles(0, 0, math.pi / 2)
-		part(model, "MilkLid", Vector3.new(2.8, 0.25, 2.8), Vector3.new(0, 3.85, 0), Color3.fromRGB(255, 225, 195))
-		part(model, "Straw", Vector3.new(0.35, 2.4, 0.35), Vector3.new(0.8, 5.05, 0.2), Color3.fromRGB(255, 103, 151))
-		for i = 1, 5 do part(model, "BobaPearl", Vector3.new(0.45, 0.45, 0.45), Vector3.new(-0.9 + i * 0.3, 1.5 + (i % 2) * 0.4, -1.1), Color3.fromRGB(57, 30, 39), ball) end
-	elseif shape == "greens" then
-		for i = 1, 7 do
-			local leaf = part(model, "KangkungLeaf", Vector3.new(0.9, 3, 0.4), Vector3.new((i - 4) * 0.4, 4.4, 1), Color3.fromRGB(76 + i * 12, 170, 55), ball)
-			leaf.CFrame *= CFrame.Angles(0, 0, (i - 4) * 0.16)
-		end
-		part(model, "Beard", Vector3.new(1.3, 1.3, 0.4), Vector3.new(0, 3.4, -0.9), Color3.fromRGB(235, 230, 219), ball)
-	elseif shape == "parcel" then
-		body.Shape = Enum.PartType.Block
-		part(model, "LeafTie", Vector3.new(2.5, 0.3, 1.85), Vector3.new(0, 2.3, 0), Color3.fromRGB(244, 214, 122))
-		part(model, "ShoppingBag", Vector3.new(1.2, 1.4, 0.8), Vector3.new(2, 1.9, -0.2), Color3.fromRGB(245, 117, 145))
-	elseif shape == "skewer" then
-		part(model, "Skewer", Vector3.new(0.18, 6, 0.18), Vector3.new(0, 3, 0), Color3.fromRGB(233, 200, 140))
-		for i = 1, 3 do part(model, "Meatball", Vector3.new(1.8, 1.4, 1.6), Vector3.new(0, 0.4 + i * 1.25, 0), color, ball) end
-	elseif shape == "speaker" then
-		head.Shape = Enum.PartType.Block
-		head.Size = Vector3.new(3, 2.8, 1.8)
-		part(model, "SpeakerCone", Vector3.new(1.6, 1.6, 0.35), Vector3.new(0, 4.4, -1), Color3.fromRGB(28, 25, 47), ball)
-		part(model, "SpeakerGlow", Vector3.new(0.7, 0.7, 0.4), Vector3.new(0, 4.4, -1.18), Catalog.Rarities.Epic, ball, neon)
-		part(model, "Disco", Vector3.new(1, 1, 1), Vector3.new(0, 6, 0), Color3.fromRGB(255, 82, 177), ball, neon)
-	elseif shape == "ghost" then
-		body.Size = Vector3.new(2.4, 4, 2.1)
-		part(model, "Sunglasses", Vector3.new(1.9, 0.5, 0.3), Vector3.new(0, 4.35, -1), Color3.fromRGB(22, 19, 37))
-		part(model, "GoldenKnot", Vector3.new(0.7, 1.3, 0.7), Vector3.new(0, 5.5, 0), Color3.fromRGB(255, 202, 62), ball)
-	elseif shape == "fruit" then
-		body.Size = Vector3.new(3.6, 3.8, 2.8)
-		for i = 1, 12 do
-			local a = i * math.pi / 6
-			local spike = part(model, "DurianSpike", Vector3.new(0.5, 1.1, 0.5), Vector3.new(math.cos(a) * 1.65, 2.7 + math.sin(a) * 1.7, 0), color)
-			spike.CFrame *= CFrame.Angles(0, 0, a - math.pi / 2)
-		end
-	elseif shape == "boat" then
-		body.Size = Vector3.new(5, 1.4, 2.6)
-		part(model, "Mast", Vector3.new(0.25, 5.4, 0.25), Vector3.new(0, 4.5, 0.4), Color3.fromRGB(91, 49, 44))
-		part(model, "GoldenSail", Vector3.new(3.2, 2.8, 0.18), Vector3.new(0, 5.4, 0.4), Color3.fromRGB(255, 229, 152))
-	elseif shape == "dragon" or shape == "bird" then
-		for side = -1, 1, 2 do
-			local wing = part(model, "Wing", Vector3.new(4, 0.4, 2.7), Vector3.new(side * 2.7, 3.3, 0.4), color)
-			wing.CFrame *= CFrame.Angles(0, 0, side * 0.4)
-		end
-		for i = 1, 4 do part(model, "TailPlate", Vector3.new(2 - i * 0.25, 0.7, 2), Vector3.new(0, 2.3 - i * 0.25, i * 1.1), color, ball) end
-	elseif shape == "pot" or shape == "mortar" then
-		part(model, "Bowl", Vector3.new(3.5, 1.8, 3), Vector3.new(0, 4.8, 0), Color3.fromRGB(80, 70, 89), ball)
-		part(model, "Pestle", Vector3.new(0.6, 4.5, 0.6), Vector3.new(2, 2.8, 0), Color3.fromRGB(128, 100, 83))
-	elseif shape == "vest" then
-		part(model, "Reflector", Vector3.new(2.5, 0.4, 1.85), Vector3.new(0, 2.7, 0), Color3.fromRGB(233, 255, 120), nil, neon)
-		part(model, "Whistle", Vector3.new(0.5, 0.5, 0.5), Vector3.new(0, 3, -1), Color3.fromRGB(255, 215, 78), ball)
-	end
-	if data.rarity == "Legendary" or data.rarity == "Brainrot God" or item.id == "Sultan" then
-		for i = -1, 1 do part(model, "Crown", Vector3.new(0.5, 0.9 + (i == 0 and 0.5 or 0), 0.6), Vector3.new(i * 0.65, 5.25, 0), Color3.fromRGB(255, 216, 57), nil, neon) end
-	end
-	if shape == "rainbow" or item.mutation == "Rainbow" then
-		for i = 1, 7 do part(model, "RainbowHalo", Vector3.new(0.8, 0.8, 0.8), Vector3.new(math.cos(i * math.pi * 2 / 7) * 2, 6, math.sin(i * math.pi * 2 / 7) * 2), Color3.fromHSV(i / 7, 0.8, 1), ball, neon) end
-	end
-	local highlight = Instance.new("Highlight")
-	highlight.FillTransparency = 1
-	highlight.OutlineColor = Catalog.Rarities[data.rarity]
-	highlight.OutlineTransparency = 0.35
-	highlight.Parent = model
-	if data.rarity ~= "Common" then
-		local spark = Instance.new("Sparkles")
-		spark.SparkleColor = Catalog.Rarities[data.rarity]
-		spark.Parent = body
-	end
-	local label = Instance.new("BillboardGui")
-	label.Name = "Identity"
-	label.Size = UDim2.fromOffset(280, 85)
-	label.StudsOffsetWorldSpace = Vector3.new(0, 4.7, 0)
-	label.MaxDistance = 65
-	label.Parent = body
+function Models.label(part, title, detail, color, height)
+	local gui = Instance.new("BillboardGui")
+	gui.Name, gui.Size = "Label", UDim2.fromOffset(260, 74)
+	gui.StudsOffset = Vector3.new(0, height or 4, 0)
+	gui.MaxDistance, gui.AlwaysOnTop = 130, false
+	gui.Parent = part
 	local text = Instance.new("TextLabel")
-	text.Size = UDim2.fromScale(1, 1)
-	text.BackgroundTransparency = 1
-	text.TextColor3 = Catalog.Rarities[data.rarity]
-	text.TextStrokeTransparency = 0.2
-	text.TextStrokeColor3 = Color3.fromRGB(24, 15, 38)
-	text.Font = Enum.Font.FredokaOne
-	text.TextSize = 18
-	text.Text = (item.mutation and item.mutation .. " " or "") .. data.name .. "\n" .. string.upper(data.rarity) .. "  •  " .. Catalog.money(Catalog.rate(item)) .. "/s"
-	text.Parent = label
-	model:PivotTo(CFrame.new(0, 2.5, 0))
+	text.Size, text.BackgroundTransparency = UDim2.fromScale(1, 1), 1
+	text.Font, text.TextSize = Enum.Font.GothamBold, 19
+	text.TextColor3, text.TextStrokeTransparency = color or Color3.new(1,1,1), 0.25
+	text.Text = title .. "\n" .. detail
+	text.Parent = gui
+	return gui
+end
+function Models.buildFace(model,item)
+	local cream=Color3.fromRGB(255,251,232)
+	local ink=Color3.fromRGB(40,31,55)
+	local function facePart(name,size,pos,color,ball)
+		return Models.part(model,name,size,CFrame.new(pos),color,nil,ball and Enum.PartType.Ball)
+	end
+	for _,side in {-1,1} do
+		facePart("EyeWhite",Vector3.new(1.08,1.2,0.5),Vector3.new(side*0.67,4.25,-1.23),cream,true)
+		facePart("Pupil",Vector3.new(0.53,0.66,0.23),Vector3.new(side*0.61,4.18,-1.51),ink,true)
+		facePart("EyeSpark",Vector3.one*0.18,Vector3.new(side*0.61-0.1,4.38,-1.65),Color3.new(1,1,1),true)
+		local brow=facePart("Eyebrow",Vector3.new(0.86,0.17,0.22),Vector3.new(side*0.67,4.99,-1.31),ink)
+		brow.CFrame*=CFrame.Angles(0,0,side*(item.rarity=="Common" and -0.12 or 0.2))
+		facePart("Cheek",Vector3.new(0.5,0.22,0.16),Vector3.new(side*1.05,3.65,-1.31),Color3.fromRGB(255,145,159),true)
+	end
+	facePart("Smile",Vector3.new(0.95,0.53,0.22),Vector3.new(0,3.55,-1.36),ink,true)
+	facePart("Tooth",Vector3.new(0.54,0.17,0.15),Vector3.new(0,3.71,-1.5),cream)
+	if item.shape=="ghost" then
+		for _,side in {-1,1} do
+			facePart("PremiumGlasses",Vector3.new(1.22,0.5,0.18),Vector3.new(side*0.65,4.37,-1.72),ink)
+			facePart("LensGlint",Vector3.new(0.34,0.08,0.05),Vector3.new(side*0.65,4.5,-1.83),Color3.fromRGB(160,232,255))
+		end
+		facePart("GlassesBridge",Vector3.new(0.4,0.12,0.18),Vector3.new(0,4.4,-1.72),ink)
+	elseif item.shape=="skewer" then
+		for _,side in {-1,1} do
+			local moustache=facePart("SateMoustache",Vector3.new(0.8,0.18,0.15),Vector3.new(side*0.42,3.87,-1.59),ink)
+			moustache.CFrame*=CFrame.Angles(0,0,side*0.2)
+		end
+	elseif item.shape=="fruit" then
+		facePart("NangkaBun",Vector3.one*1.5,Vector3.new(0,5.6,0.4),Color3.fromRGB(190,185,61),true)
+	end
+end
+function Models.build(catch, parent)
+	local item = Catalog.byId[catch.id]
+	local model = Instance.new("Model")
+	model.Name = item.name
+	local color = item.color
+	if catch.mutation == "Gold" then color = Color3.fromRGB(255,207,69)
+	elseif catch.mutation == "Diamond" then color = Color3.fromRGB(123,243,255)
+	elseif catch.mutation == "Sambal-Lava" then color = Color3.fromRGB(255,78,42) end
+	local function piece(name, size, x,y,z, tint, ball)
+		return Models.part(model, name, size, CFrame.new(x,y,z), tint or color, nil, ball and Enum.PartType.Ball)
+	end
+	local core = piece("Body", Vector3.new(2.3,2.8,1.8), 0,2,0, color, true)
+	model.PrimaryPart = core
+	piece("Head", Vector3.new(2.9,2.6,2.4), 0,4,0, color, true)
+	for _, side in {-1,1} do
+		piece("Foot", Vector3.new(0.9,0.6,1.3), side*0.65,0.45,-0.2, Color3.fromRGB(64,48,78), true)
+		piece("Hand", Vector3.new(0.7,1.6,0.7), side*1.55,2.1,0, color, true)
+	end
+	local s = item.shape
+	if s == "greens" then
+		for i=1,5 do piece("Kangkung", Vector3.new(0.65,3.2,0.6), (i-3)*0.4,3.6,1.2, Color3.fromRGB(48,153,75), true) end
+		piece("Beard",Vector3.new(1.6,1.3,0.5),0,2.9,-1.2,Color3.new(1,1,1),true)
+	elseif s == "parcel" then
+		piece("BananaLeaf",Vector3.new(2.6,3,2),0,2,0,Color3.fromRGB(40,138,78))
+		piece("ShoppingBag",Vector3.new(1,1.4,0.8),1.9,1.1,0,Color3.fromRGB(255,183,111))
+	elseif s == "cup" then
+		piece("Straw",Vector3.new(0.3,2,0.3),0.7,5.8,0,Color3.fromRGB(255,117,164))
+		for i=1,5 do piece("Pearl",Vector3.one*0.45,(i-3)*0.4,3,-1.05,Color3.fromRGB(65,39,46),true) end
+	elseif s == "skewer" or s == "crown" then
+		piece("Skewer",Vector3.new(0.2,5,0.2),1.9,3,0,Color3.fromRGB(238,194,120))
+		for i=1,3 do piece("Meatball",Vector3.one*0.8,1.9,2.6+i*0.8,0,nil,true) end
+	elseif s == "pot" then
+		piece("RendangPot",Vector3.new(3.4,0.7,2.6),0,5.2,0,Color3.fromRGB(72,59,86))
+		piece("PotLid",Vector3.new(0.6,0.4,0.6),0,5.8,0,Color3.fromRGB(255,206,65))
+	elseif s == "speaker" then
+		piece("SpeakerCase",Vector3.new(3.1,3,2.4),0,4,0,Color3.fromRGB(49,64,141))
+		piece("SpeakerCone",Vector3.new(1.8,1.8,0.3),0,4,-1.3,Color3.fromRGB(86,223,244),true)
+		piece("Disco",Vector3.one*1.1,0,6,0,Color3.fromRGB(255,111,200),true)
+	elseif s == "whistle" then
+		piece("SafetyVest",Vector3.new(2.5,2,1.9),0,2.3,0,Color3.fromRGB(255,145,45))
+		piece("Whistle",Vector3.new(0.7,0.4,0.8),0,3.2,-1.4,Color3.fromRGB(255,218,63))
+	elseif s == "dragon" or s == "bird" then
+		for side=-1,1,2 do
+			local wing = piece("Wing",Vector3.new(3,0.5,2),side*2,3,0)
+			wing.CFrame *= CFrame.Angles(0,0,side*0.45)
+		end
+		for i=1,4 do piece("Tail",Vector3.one*(1.5-i*0.2),0,1.6,1+i*0.65,nil,true) end
+	elseif s == "ghost" then
+		piece("ShroudKnot",Vector3.new(1.2,1.3,0.9),0,5.6,0,Color3.fromRGB(255,209,83),true)
+	elseif s == "mortar" then
+		piece("StoneBowl",Vector3.new(3.2,1.4,2.6),0,1.3,0,Color3.fromRGB(80,73,91),true)
+		piece("Pestle",Vector3.new(0.7,4,0.7),2,2,0,Color3.fromRGB(104,82,69))
+	elseif s == "ship" then
+		piece("Hull",Vector3.new(4.3,1.1,2.2),0,1,0)
+		piece("Mast",Vector3.new(0.25,5.4,0.25),0,3.8,0.9,Color3.fromRGB(96,55,43))
+		piece("GoldenSail",Vector3.new(2.3,2.1,0.18),1.1,5.4,0.9,Color3.fromRGB(255,224,133))
+	end
+	if s == "fruit" or s == "spikes" or s == "halo" then
+		for i=1,12 do
+			local a = i*math.pi/6
+			piece("CrownFruit",Vector3.one*0.65,math.cos(a)*1.45,4+math.sin(a)*1.3,0, s=="halo" and Color3.fromHSV(i/12,0.7,1) or color,true)
+		end
+	end
+	if s == "crown" or s == "spikes" then
+		for i=-1,1 do piece("CrownPoint",Vector3.new(0.45,0.9,0.45),i*0.7,5.6,0,Color3.fromRGB(255,224,81)) end
+	end
+	Models.buildFace(model,item)
+	local highlight = Instance.new("Highlight")
+	highlight.FillTransparency, highlight.OutlineTransparency = 1, 0.3
+	highlight.DepthMode=Enum.HighlightDepthMode.Occluded
+	highlight.OutlineColor = Catalog.colors[item.rarity]
+	highlight.Parent = model
+	Models.collectionLabel(core,item,catch)
+	model:SetAttribute("Mutation",catch.mutation or "Normal")
+	model:SetAttribute("Dance",item.effect == "dance")
 	model.Parent = parent
 	return model
 end
-
+function Models.collectionLabel(core,item,catch)
+	local label=Instance.new("BillboardGui")
+	label.Name,label.Size="CollectionLabel",UDim2.fromOffset(300,108)
+	label.StudsOffset, label.MaxDistance=Vector3.new(0,6.7,0),105
+	label.AlwaysOnTop=false
+	label.Parent=core
+	local mutation=catch.mutation or "Normal"
+	local rows={item.name,item.rarity..(mutation~="Normal" and " · "..mutation or ""),"$"..Catalog.income(catch).."/s"}
+	for i,value in rows do
+		local text=Instance.new("TextLabel")
+		text.Name="Line"..i
+		text.Size,text.Position=UDim2.fromScale(1,0.333),UDim2.fromScale(0,(i-1)/3)
+		text.BackgroundTransparency=1
+		text.Text,text.TextSize,text.Font=value,i==1 and 26 or 25,Enum.Font.GothamBlack
+		text.TextColor3=i==2 and Catalog.colors[item.rarity] or i==3 and Color3.fromRGB(172,255,164) or Color3.new(1,1,1)
+		text.TextStrokeColor3,text.TextStrokeTransparency=Color3.fromRGB(40,30,58),0
+		text.Parent=label
+	end
+end
 return Models

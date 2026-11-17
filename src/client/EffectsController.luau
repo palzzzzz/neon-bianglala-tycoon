@@ -1,58 +1,36 @@
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local Effects = {}
-
-function Effects.claimPop(gui, text, color)
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromOffset(320, 55)
-	label.Position = UDim2.new(0.5, -160, 0.4, 0)
-	label.BackgroundTransparency = 1
-	label.Text = text
-	label.TextColor3 = color or Color3.fromRGB(100, 255, 210)
-	label.Font = Enum.Font.FredokaOne
-	label.TextSize = 32
-	label.TextStrokeTransparency = 0.2
-	label.Parent = gui
-	TweenService:Create(label, TweenInfo.new(1.3), {Position = UDim2.new(0.5, -160, 0.3, 0), TextTransparency = 1, TextStrokeTransparency = 1}):Play()
-	game:GetService("Debris"):AddItem(label, 1.4)
-end
-
-function Effects.fusionBurst(gui)
-	for i = 1, 18 do
-		local dot = Instance.new("Frame")
-		dot.Size = UDim2.fromOffset(8, 18)
-		dot.Position = UDim2.fromScale(0.5, 0.4)
-		dot.BackgroundColor3 = Color3.fromHSV(i / 18, 0.8, 1)
-		dot.BorderSizePixel = 0
-		dot.Parent = gui
-		local a = i / 18 * math.pi * 2
-		TweenService:Create(dot, TweenInfo.new(1), {Position = UDim2.new(0.5, math.cos(a) * 250, 0.4, math.sin(a) * 200), Rotation = i * 80, BackgroundTransparency = 1}):Play()
-		game:GetService("Debris"):AddItem(dot, 1.1)
+local TweenService=game:GetService("TweenService")
+local Debris=game:GetService("Debris")
+local Effects={}
+function Effects.claimPop(position,color,count)
+	for i=1,count do
+		local p=Instance.new("Part")
+		p.Size,p.Shape=Vector3.one*0.45,Enum.PartType.Ball
+		p.Anchored,p.CanCollide,p.CanTouch=true,false,false
+		p.Material,p.Color=Enum.Material.Neon,color
+		p.Position=position+Vector3.new(0,2,0)
+		p.Parent=workspace
+		local a=i*math.pi*2/count
+		TweenService:Create(p,TweenInfo.new(0.8),{Position=p.Position+Vector3.new(math.cos(a)*5,3,math.sin(a)*5),Transparency=1}):Play()
+		Debris:AddItem(p,0.9)
 	end
 end
-
-function Effects.rarityAura()
-	local models = {}
-	local function track(instance)
-		if instance:IsA("Model") and instance:GetAttribute("IdleBase") then models[instance] = true end
+function Effects.fusionBurst(position) Effects.claimPop(position,Color3.fromRGB(255,106,224),28) end
+function Effects.rarityAura(model,time)
+	if model:GetAttribute("Mutation")=="Rainbow" then
+		local highlight=model:FindFirstChildOfClass("Highlight")
+		if highlight then highlight.OutlineColor=Color3.fromHSV(time%4/4,0.8,1) end
 	end
-	for _, instance in workspace:GetDescendants() do track(instance) end
-	workspace.DescendantAdded:Connect(function(instance)
-		if instance:IsA("Model") then
-			instance:GetAttributeChangedSignal("IdleBase"):Connect(function() track(instance) end)
-			track(instance)
-		end
-	end)
-	RunService.RenderStepped:Connect(function()
-		local t = workspace:GetServerTimeNow()
-		for model in models do
-			if not model.Parent then models[model] = nil else
-				local base = model:GetAttribute("IdleBase")
-				local dance = model:GetAttribute("Dancing")
-				model:PivotTo(base * CFrame.new(0, math.sin(t * (dance and 7 or 2)) * 0.22, 0) * CFrame.Angles(0, math.sin(t * 2) * (dance and 0.35 or 0.06), 0))
-			end
-		end
-	end)
 end
-
+function Effects.receive(kind,position)
+	if kind=="hit" then
+		local sound=Instance.new("Sound")
+		sound.SoundId="rbxasset://sounds/impact_water.mp3"
+		sound.Volume,sound.PlaybackSpeed=0.6,1.8
+		sound.Parent=workspace
+		sound:Play()
+		Debris:AddItem(sound,2)
+	end
+	if kind=="fusion" then Effects.fusionBurst(position)
+	else Effects.claimPop(position,Color3.fromRGB(255,222,110),12) end
+end
 return Effects

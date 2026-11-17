@@ -1,36 +1,27 @@
-local Tide = {level = 0, elapsed = 0, night = false, height = -2}
-
+local Tide={level=0,night=0,isNight=false,elapsed=0}
 function Tide.isStallFlooded(stall)
-	if stall.level >= 5 then return false end
-	return Tide.level >= stall.level
+	return stall.level<5 and Tide.level>=stall.level
 end
-
-function Tide.raiseTide(seconds)
-	Tide.level = math.min(5, 1 + math.floor(seconds / 12))
-	Tide.height = Tide.level * 3
+function Tide.raiseTide(level,world)
+	Tide.level=level
+	world.water.Position=Vector3.new(0,level*3,0)
 end
-
-function Tide.lowerTide(seconds)
-	Tide.height = 15 - math.clamp(seconds / 10, 0, 1) * 17
-	Tide.level = math.max(0, math.ceil(Tide.height / 3))
+function Tide.lowerTide(progress,world)
+	Tide.level=math.max(0,5*(1-progress))
+	world.water.Position=Vector3.new(0,math.max(-1,Tide.level*3),0)
 end
-
-function Tide.update(dt, world)
-	Tide.elapsed += dt
-	local cycle = Tide.elapsed % 240
-	Tide.night = cycle >= 180
-	if Tide.night then
-		Tide.raiseTide(cycle - 180)
-	elseif Tide.elapsed >= 240 and cycle < 10 then
-		Tide.lowerTide(cycle)
-	else
-		Tide.level, Tide.height = 0, -2
-	end
-	world.water.Position = Vector3.new(0, Tide.height - 1, 0)
-	game:GetService("Lighting").ClockTime = Tide.night and 0.2 or 17.3
-	workspace:SetAttribute("TideLevel", Tide.level)
-	workspace:SetAttribute("Night", Tide.night)
-	workspace:SetAttribute("CycleRemaining", math.ceil(Tide.night and (240 - cycle) or (180 - cycle)))
+function Tide.update(elapsed,world,announce)
+	Tide.elapsed=elapsed
+	local phase=elapsed%240
+	local wasNight=Tide.isNight
+	Tide.isNight=phase>=180
+	if Tide.isNight then
+		Tide.night=math.floor(elapsed/240)+1
+		local level=math.min(5,math.floor((phase-180)/12)+1)
+		if not wasNight or (level==3 and Tide.level~=3) then announce("BANJIR ROB RISING! Naikkan tiang lapak!") end
+		Tide.raiseTide(level,world)
+	elseif elapsed>=240 and phase<10 then Tide.lowerTide(phase/10,world)
+	else Tide.level=0;world.water.Position=Vector3.new(0,-1,0) end
+	return Tide.isNight and not wasNight
 end
-
 return Tide
