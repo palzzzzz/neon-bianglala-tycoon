@@ -41,6 +41,22 @@ function Hud.build()
 	gui.ResetOnSpawn = false
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	Hud.gui = gui
+	local canvas = Instance.new("Frame")
+	canvas.Name = "ResponsiveCanvas"
+	canvas.Size = UDim2.fromScale(1, 1)
+	canvas.BackgroundTransparency = 1
+	canvas.Parent = gui
+	local scale = Instance.new("UIScale")
+	scale.Parent = canvas
+	local function resize()
+		local viewport = workspace.CurrentCamera.ViewportSize
+		local factor = math.min(1, viewport.X / 1280, viewport.Y / 720)
+		scale.Scale = math.max(0.25, factor)
+		canvas.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
+	end
+	resize()
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(resize)
+	gui = canvas
 	local money = panel(gui, UDim2.new(1, -304, 0, 14), UDim2.fromOffset(286, 105))
 	label(money, "DOMPET PASAR", UDim2.fromOffset(18, 10), UDim2.fromOffset(250, 20), 14, teal)
 	Hud.cash = label(money, "$25", UDim2.fromOffset(18, 31), UDim2.fromOffset(250, 43), 36)

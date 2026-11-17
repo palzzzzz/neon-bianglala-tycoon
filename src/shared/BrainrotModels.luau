@@ -115,7 +115,7 @@ function Models.create(item, parent)
 	label.Name = "Identity"
 	label.Size = UDim2.fromOffset(280, 85)
 	label.StudsOffsetWorldSpace = Vector3.new(0, 4.7, 0)
-	label.MaxDistance = 95
+	label.MaxDistance = 65
 	label.Parent = body
 	local text = Instance.new("TextLabel")
 	text.Size = UDim2.fromScale(1, 1)

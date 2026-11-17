@@ -41,5 +41,5 @@ node main.ts
 Server memegang semua transaksi dan profil. Client menggambar HUD serta efek. `vendor/makefun-roblox.ts` tetap salinan kit tanpa perubahan.
 
 Fase 1: starter dipublish Public, play code terverifikasi, PLAY.json dan owner.json di-commit.
-Fase 2: implementasi awal dan build tersedia; playtest Studio, screenshot akhir, dan publish versi jadi masih belum selesai.
+Fase 2: build dan playtest dasar Studio tersedia. Interaksi klaim Kakek Kangkung, penempatan lapak, dan income $1/s telah diuji melalui prompt game. Pemeriksaan terpisah atas ekonomi, enam resep fusion, upgrade, cooldown kunci, pencurian uang, rebirth, dan tingkat banjir lulus. Persistence pada server live dan sesi multiplayer belum diuji. Screenshot akhir dan publish versi jadi masih belum selesai.
 Screenshot starter belum diganti dan bukan bukti gameplay versi ini.

@@ -50,10 +50,12 @@
     "Lighting": {
       "$properties": {
         "Ambient": [
-          0,
-          0,
-          0
+          0.4,
+          0.3,
+          0.45
         ],
+        "OutdoorAmbient": [0.42, 0.38, 0.5],
+        "ExposureCompensation": 0.3,
         "Brightness": 2,
         "GlobalShadows": true,
         "Outlines": false,

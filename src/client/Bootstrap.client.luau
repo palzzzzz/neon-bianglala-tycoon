@@ -4,6 +4,15 @@ local event = game.ReplicatedStorage:WaitForChild("PasarEvent")
 local Catalog = require(game.ReplicatedStorage.Shared.Catalog)
 local previousIncome = 0
 
+local function faceMarket(character)
+	local root = character:WaitForChild("HumanoidRootPart")
+	task.wait(0.2)
+	workspace.CurrentCamera.CFrame = CFrame.lookAt(root.Position + Vector3.new(0, 10, -20), root.Position + Vector3.new(0, 6, 18))
+end
+local player = game.Players.LocalPlayer
+player.CharacterAdded:Connect(faceMarket)
+if player.Character then task.spawn(faceMarket, player.Character) end
+
 event.OnClientEvent:Connect(function(kind, payload)
 	if kind == "state" then
 		Hud.render(payload)

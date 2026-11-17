@@ -63,6 +63,11 @@ function World.build()
 	World.root = root
 	World.part(root, "Island", Vector3.new(245, 10, 225), CFrame.new(0, -5, 0), Color3.fromRGB(63, 66, 78), Enum.Material.Slate)
 	World.part(root, "Plaza", Vector3.new(218, 0.4, 200), CFrame.new(0, 0.2, 0), Color3.fromRGB(89, 66, 86), Enum.Material.Cobblestone)
+	World.part(root, "MainPromenade", Vector3.new(20, 0.15, 170), CFrame.new(0, 0.5, -5), Color3.fromRGB(183, 132, 107), Enum.Material.Brick)
+	World.part(root, "FusionPromenade", Vector3.new(140, 0.15, 14), CFrame.new(0, 0.55, -28), Color3.fromRGB(183, 132, 107), Enum.Material.Brick)
+	for _, x in {-11, 11} do
+		World.part(root, "PromenadeEdge", Vector3.new(0.25, 0.18, 170), CFrame.new(x, 0.65, -5), warm, Enum.Material.Neon)
+	end
 	World.water = World.part(root, "BanjirRob", Vector3.new(900, 2, 900), CFrame.new(0, -3, 0), Color3.fromRGB(23, 165, 175), Enum.Material.Glass)
 	World.water.Transparency = 0.35
 	World.water.CanCollide = false
@@ -70,7 +75,7 @@ function World.build()
 	spawn.Name = "PasarSpawn"
 	spawn.Anchored = true
 	spawn.Size = Vector3.new(12, 1, 12)
-	spawn.CFrame = CFrame.new(0, 1, -84)
+	spawn.CFrame = CFrame.new(0, 1, -84) * CFrame.Angles(0, math.pi, 0)
 	spawn.Color = teal
 	spawn.Neutral = true
 	spawn.Duration = 0
