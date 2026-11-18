@@ -21,7 +21,23 @@ if RunService:IsStudio() then
 	end
 	cameraBridge.Parent=game.Players.LocalPlayer.PlayerGui
 end
-events:WaitForChild("State").OnClientEvent:Connect(Hud.update)
+local Index=require(script.Parent.IndexController)
+local Home=require(script.Parent.HomeController)
+Index.create()
+Home.create(Hud,Index)
+Hud.onIndex=Index.toggle
+Hud.onHome=function() Home.show() end
+events:WaitForChild("State").OnClientEvent:Connect(function(state)
+	Index.setData(state.collection)
+	Hud.update(state)
+end)
+-- HOME poster shows once per join, as soon as the avatar has spawned.
+task.spawn(function()
+	local player=game.Players.LocalPlayer
+	if not player.Character then player.CharacterAdded:Wait() end
+	task.wait(0.8)
+	Home.show()
+end)
 events:WaitForChild("Notice").OnClientEvent:Connect(Hud.showTideWarning)
 events:WaitForChild("Effect").OnClientEvent:Connect(Effects.receive)
 local elapsed=0

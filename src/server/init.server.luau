@@ -27,6 +27,7 @@ function context.announce(message) notice:FireAllClients(message) end
 function context.changed(player)
 	local profile=Data.profiles[player]
 	if not profile then return end
+	Data.track(profile)
 	Stalls.refresh(player,profile,context)
 	Claim.carryBrainrot(player,profile,context)
 end
@@ -119,7 +120,7 @@ RunService.Heartbeat:Connect(function(dt)
 				if stall.catch then lowest=math.min(lowest,stall.level) end
 				lockRemaining=math.max(lockRemaining,(stall.lockUntil or 0)-os.clock())
 			end
-			state:FireClient(player,{cash=profile.cash,rate=rate,lifetime=profile.lifetime,branches=profile.branches,
+			state:FireClient(player,{collection=Data.collection(profile),cash=profile.cash,rate=rate,lifetime=profile.lifetime,branches=profile.branches,
 				water=Tide.level,stilt=lowest,night=Tide.isNight,nightNumber=Tide.night,
 				phase=context.elapsed%240,lock=math.max(0,lockRemaining),carry=profile.carry,
 				epicPity=profile.epicPity,legendPity=profile.legendPity,selection=profile.selection or {},

@@ -1,6 +1,7 @@
 local Players=game:GetService("Players")
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
 local Hud={}
+function Hud.toggleRecipe() Hud.recipe.Visible=not Hud.recipe.Visible end
 function Hud.create()
 	local gui=Instance.new("ScreenGui")
 	gui.Name,gui.ResetOnSpawn="PasarHUD",false
@@ -30,6 +31,11 @@ function Hud.create()
 	Hud.help=panel("Controls",UDim2.fromScale(0.42,0.07),UDim2.fromScale(0.02,0.9),"E klaim / taruh · R tiang · T kunci · F bahan")
 	Hud.recipe=panel("Recipes",UDim2.fromScale(0.6,0.58),UDim2.fromScale(0.2,0.28),"")
 	Hud.recipe.Visible=false
+	-- The recipe panel lives in its own top-layer gui so it can open over the home screen too.
+	local recipeGui=Instance.new("ScreenGui")
+	recipeGui.Name,recipeGui.ResetOnSpawn,recipeGui.IgnoreGuiInset,recipeGui.DisplayOrder="ResepGui",false,true,30
+	recipeGui.Parent=gui.Parent
+	Hud.recipe.Parent=recipeGui
 	Hud.recipe.TextSize=17
 	local lines={"RESEP GEROBAK FUSION"}
 	for _,r in Catalog.recipes do table.insert(lines,Catalog.byId[r[1]].name.." + "..Catalog.byId[r[2]].name.." → "..Catalog.byId[r[3]].name) end
@@ -41,7 +47,19 @@ function Hud.create()
 	button.Text,button.TextSize,button.Font="RESEP FUSION",17,Enum.Font.GothamBold
 	button.BackgroundColor3,button.TextColor3=Color3.fromRGB(255,204,116),Color3.fromRGB(46,40,68)
 	button.Parent=gui
-	button.Activated:Connect(function() Hud.recipe.Visible=not Hud.recipe.Visible end)
+	button.Activated:Connect(Hud.toggleRecipe)
+	local function smallButton(text,x,callback)
+		local b=Instance.new("TextButton")
+		b.Name,b.Size,b.Position=text.."Button",UDim2.fromScale(0.1,0.06),UDim2.fromScale(x,0.04)
+		b.Text,b.TextSize,b.Font=text,18,Enum.Font.GothamBold
+		b.BackgroundColor3,b.TextColor3=Color3.fromRGB(44,39,74),Color3.fromRGB(255,244,216)
+		b.Parent=gui
+		local round=Instance.new("UICorner");round.CornerRadius=UDim.new(0,12);round.Parent=b
+		local stroke=Instance.new("UIStroke");stroke.Color=Color3.fromRGB(255,198,119);stroke.Thickness=2;stroke.Parent=b
+		b.Activated:Connect(callback)
+	end
+	smallButton("HOME",0.02,function() if Hud.onHome then Hud.onHome() end end)
+	smallButton("INDEX",0.13,function() if Hud.onIndex then Hud.onIndex() end end)
 	Hud.gui=gui
 	task.delay(6,function() if not Hud.lastNotice then Hud.banner.Visible=false end end)
 end
