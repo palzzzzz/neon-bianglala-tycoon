@@ -1,3 +1,6 @@
+# Roblox Studio / Rojo place lock files - local only, never commit
 *.rbxl.lock
 *.rbxlx.lock
+
+# Local log files
 *.log
