@@ -135,7 +135,7 @@ function Home.create(Hud,Index)
 		if not Home.open then return end
 		local camera=workspace.CurrentCamera
 		camera.CameraType=Enum.CameraType.Scriptable
-		camera.FieldOfView=62
+		camera.FieldOfView=78
 		camera.CFrame=CFrame.lookAt(CAMERA_POS,CAMERA_TARGET)
 	end)
 end
@@ -160,21 +160,43 @@ local function setSignVisible(visible)
 	end
 end
 
+-- Keep the poster crisp: local-only lighting tweak (less bloom/haze/exposure wash-out) while HOME is open.
+local function setPosterLighting(on)
+	local lighting=game:GetService("Lighting")
+	local bloom=lighting:FindFirstChildOfClass("BloomEffect")
+	local atmosphere=lighting:FindFirstChildOfClass("Atmosphere")
+	if on then
+		Home.saved={exposure=lighting.ExposureCompensation,bloom=bloom and bloom.Intensity,haze=atmosphere and atmosphere.Haze}
+		lighting.ExposureCompensation=-0.35
+		if bloom then bloom.Intensity=0.05 end
+		if atmosphere then atmosphere.Haze=0.05 end
+	elseif Home.saved then
+		lighting.ExposureCompensation=Home.saved.exposure
+		if bloom and Home.saved.bloom then bloom.Intensity=Home.saved.bloom end
+		if atmosphere and Home.saved.haze then atmosphere.Haze=Home.saved.haze end
+		Home.saved=nil
+	end
+end
+
 function Home.show()
 	Home.open=true
 	setSignVisible(false)
+	if not Home.saved then setPosterLighting(true) end
+	pcall(function() game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.Chat,false) end)
 	Home.gui.Enabled=true
 	if Home.Hud.gui then Home.Hud.gui.Enabled=false end
 	if not Home.lineup or not Home.lineup.Parent then Home.lineup=buildLineup() end
 	-- stand the avatar in front of the lineup, facing the camera
 	local character=Players.LocalPlayer.Character
-	if character then character:PivotTo(CFrame.lookAt(Vector3.new(14,3,83),Vector3.new(14,3,CAMERA_POS.Z))) end
+	if character then character:PivotTo(CFrame.lookAt(Vector3.new(22,3,75),Vector3.new(22,3,CAMERA_POS.Z))) end
 	setWalking(false)
 end
 
 function Home.close()
 	Home.open=false
 	setSignVisible(true)
+	setPosterLighting(false)
+	pcall(function() game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.Chat,true) end)
 	Home.gui.Enabled=false
 	Home.Index.close()
 	Home.Hud.recipe.Visible=false
