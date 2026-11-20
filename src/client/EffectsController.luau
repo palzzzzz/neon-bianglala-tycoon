@@ -16,10 +16,11 @@ function Effects.claimPop(position,color,count)
 end
 function Effects.fusionBurst(position) Effects.claimPop(position,Color3.fromRGB(255,106,224),28) end
 function Effects.rarityAura(model,time)
-	if model:GetAttribute("Mutation")=="Rainbow" then
-		local highlight=model:FindFirstChildOfClass("Highlight")
-		if highlight then highlight.OutlineColor=Color3.fromHSV(time%4/4,0.8,1) end
-	end
+	local mutation=model:GetAttribute("Mutation")
+	local highlight=model:FindFirstChildOfClass("Highlight")
+	if not highlight then return end
+	if mutation=="Rainbow" then highlight.OutlineColor=Color3.fromHSV(time%4/4,0.8,1)
+	elseif mutation=="Galaxy" then highlight.OutlineColor=Color3.fromHSV(0.72+math.sin(time*1.5)*0.08,0.7,1) end
 end
 function Effects.receive(kind,position)
 	if kind=="hit" then

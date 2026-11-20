@@ -37,7 +37,23 @@ Catalog.recipes = {
 	{"sate", "koplo", "sategoyang"}, {"naga", "rujak", "nagarujak"},
 	{"pocong", "phoenix", "pocongphoenix"}, {"durian", "pinisi", "pinisidurian"},
 }
-Catalog.multipliers = {Normal=1, Gold=2, Diamond=5, ["Sambal-Lava"]=9, Rainbow=20}
+-- Eight mutations, ordered by strength. chance = spawn weight on a fusion roll (rarer = stronger).
+Catalog.mutations = {
+	{name="Silver", mult=1.5, chance=0.06, color=Color3.fromRGB(205,212,224), label="x1.5"},
+	{name="Gold", mult=2, chance=0.04, color=Color3.fromRGB(255,207,69), label="x2"},
+	{name="Frozen", mult=4, chance=0.03, color=Color3.fromRGB(140,226,255), label="x4"},
+	{name="Diamond", mult=5, chance=0.02, color=Color3.fromRGB(123,243,255), label="x5"},
+	{name="Toxic", mult=7, chance=0.018, color=Color3.fromRGB(96,255,64), label="x7"},
+	{name="Sambal-Lava", mult=9, chance=0.015, color=Color3.fromRGB(255,98,62), label="x9"},
+	{name="Galaxy", mult=12, chance=0.008, color=Color3.fromRGB(88,38,158), label="x12"},
+	{name="Rainbow", mult=20, chance=0.005, color=Color3.fromRGB(255,130,230), label="x20"},
+}
+Catalog.multipliers = {Normal=1}
+Catalog.mutationByName = {}
+for _, m in Catalog.mutations do
+	Catalog.multipliers[m.name] = m.mult
+	Catalog.mutationByName[m.name] = m
+end
 Catalog.stiltPrices = {0, 200000, 1500000, 8000000, 40000000}
 Catalog.lockPrice = 50000
 Catalog.startingCash = 25000

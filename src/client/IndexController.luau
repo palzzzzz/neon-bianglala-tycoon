@@ -8,7 +8,11 @@ local NAVY=Color3.fromRGB(44,39,74)
 local CREAM=Color3.fromRGB(255,244,216)
 local GOLD=Color3.fromRGB(255,198,119)
 local GREY=Color3.fromRGB(112,108,130)
-local MUTATIONS={{"Gold","x2",Color3.fromRGB(255,207,69)},{"Diamond","x5",Color3.fromRGB(123,243,255)},{"Sambal-Lava","x9",Color3.fromRGB(255,98,62)},{"Rainbow","x20",Color3.fromRGB(255,130,230)}}
+local MUTATIONS={}
+for _,m in Catalog.mutations do
+	-- Galaxy's body colour is too dark for text on the navy chip, so lift it for the index
+	table.insert(MUTATIONS,{m.name,m.label,m.name=="Galaxy" and Color3.fromRGB(170,120,255) or m.color})
+end
 
 local function box(parent,name,size,position,color,transparency)
 	local f=Instance.new("Frame")
@@ -109,7 +113,7 @@ function Index.create()
 	text(mutBar,"Label","MUTASI",UDim2.fromScale(0.13,0.5),UDim2.fromScale(0.01,0.25),GOLD,Enum.Font.GothamBlack)
 	Index.mutations={}
 	for i,m in MUTATIONS do
-		local chip=box(mutBar,"Mut_"..m[1],UDim2.fromScale(0.2,0.78),UDim2.fromScale(0.155+(i-1)*0.2105,0.11),NAVY)
+		local chip=box(mutBar,"Mut_"..m[1],UDim2.fromScale(0.1,0.78),UDim2.fromScale(0.155+(i-1)*0.1055,0.11),NAVY)
 		round(chip,8);stroke(chip,m[3],2)
 		local label=text(chip,"Label","",UDim2.fromScale(0.94,0.8),UDim2.fromScale(0.03,0.1),m[3],Enum.Font.GothamBlack)
 		Index.mutations[m[1]]={label=label,chip=chip,info=m}

@@ -41,7 +41,12 @@ function Hud.create()
 	local lines={"RESEP GEROBAK FUSION"}
 	for _,r in Catalog.recipes do table.insert(lines,Catalog.byId[r[1]].name.." + "..Catalog.byId[r[2]].name.." → "..Catalog.byId[r[3]].name) end
 	table.insert(lines,"Legendary + Legendary → "..Catalog.byId.maharaja.name.." 30% / Epic 70%")
-	table.insert(lines,"Mutasi: Gold 4% · Diamond 2% · Sambal-Lava 1,5% · Rainbow 0,5%")
+	local chances={}
+	for index=#Catalog.mutations,1,-1 do
+		local m=Catalog.mutations[index]
+		table.insert(chances,m.name.." "..string.gsub(string.format("%g",m.chance*100),"%.",",").."%")
+	end
+	table.insert(lines,"Mutasi: "..table.concat(chances," · "))
 	Hud.recipe.Text=table.concat(lines,"\n\n")
 	local button=Instance.new("TextButton")
 	button.Size,button.Position=UDim2.fromScale(0.16,0.06),UDim2.fromScale(0.82,0.9)

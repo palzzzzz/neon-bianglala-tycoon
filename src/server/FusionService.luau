@@ -3,10 +3,13 @@ local Fusion={rng=Random.new()}
 function Fusion.rollMutation(boost,rng)
 	local r=(rng or Fusion.rng):NextNumber()
 	local weight=boost and 2 or 1
-	if r<0.005*weight then return "Rainbow" end
-	if r<0.020*weight then return "Sambal-Lava" end
-	if r<0.040*weight then return "Diamond" end
-	if r<0.080*weight then return "Gold" end
+	-- cumulative from the rarest (Rainbow) up to the most common (Silver)
+	local threshold=0
+	for index=#Catalog.mutations,1,-1 do
+		local mutation=Catalog.mutations[index]
+		threshold+=mutation.chance*weight
+		if r<threshold then return mutation.name end
+	end
 	return "Normal"
 end
 function Fusion.fuseBrainrots(profile)

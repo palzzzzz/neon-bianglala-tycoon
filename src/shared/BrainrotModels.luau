@@ -58,14 +58,62 @@ function Models.buildFace(model,item)
 		facePart("NangkaBun",Vector3.one*1.5,Vector3.new(0,5.6,0.4),Color3.fromRGB(190,185,61),true)
 	end
 end
+-- Extra surface/particle treatment for the four newer mutations (colour comes from the shared path in build).
+local MUTATION_STYLE = {
+	Silver = {material = Enum.Material.Metal, reflectance = 0.35},
+	Frozen = {material = Enum.Material.Ice, transparency = 0.22},
+	Toxic = {material = Enum.Material.Neon},
+	Galaxy = {material = Enum.Material.Glass, reflectance = 0.15},
+}
+function Models.mutationFx(model, mutation, scale)
+	local style = MUTATION_STYLE[mutation or ""]
+	if not style then return end
+	for _, d in model:GetChildren() do
+		if d.Name == "MutationFx" then d:Destroy() end
+	end
+	local box, extent = model:GetBoundingBox()
+	local frame, size = box, extent * 0.95
+	local field
+	if mutation == "Silver" then
+		field = Models.sparkleField(model, frame, size, Color3.fromRGB(235,240,250), 0.5 * scale, 4, 1.2 * scale)
+	elseif mutation == "Frozen" then
+		-- drifting snow
+		field = Models.sparkleField(model, frame, size, Color3.fromRGB(190,240,255), 0.45 * scale, 9, 0.8 * scale)
+		local e = field.Sparkle
+		e.Acceleration, e.Speed = Vector3.new(0, -3 * scale, 0), NumberRange.new(0.2 * scale, 0.8 * scale)
+		e.Color = ColorSequence.new(Color3.new(1,1,1))
+		e.Lifetime = NumberRange.new(2, 3.2)
+	elseif mutation == "Toxic" then
+		-- rising bubbles
+		field = Models.sparkleField(model, frame, size, Color3.fromRGB(96,255,64), 0.7 * scale, 7, 1 * scale)
+		local e = field.Sparkle
+		e.Acceleration = Vector3.new(0, 4 * scale, 0)
+		e.Color = ColorSequence.new(Color3.fromRGB(150,255,110), Color3.fromRGB(60,230,40))
+		e.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0.9),NumberSequenceKeypoint.new(0.2,0.35),NumberSequenceKeypoint.new(0.85,0.45),NumberSequenceKeypoint.new(1,1)})
+		e.Lifetime = NumberRange.new(1.2, 2.2)	elseif mutation == "Galaxy" then
+		-- star sparkles in violet, white and cyan
+		field = Models.sparkleField(model, frame, size, Color3.fromRGB(170,120,255), 0.6 * scale, 10, 0.9 * scale)
+		local e = field.Sparkle
+		e.Color = ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(255,255,255)),ColorSequenceKeypoint.new(0.5,Color3.fromRGB(190,140,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(110,220,255))})
+	end
+	if field then
+		field.Name = "MutationFx"
+		field.CanQuery = false
+	end
+end
 function Models.build(catch, parent)
 	local item = Catalog.byId[catch.id]
 	local model = Instance.new("Model")
 	model.Name = item.name
 	local color = item.color
-	if catch.mutation == "Gold" then color = Color3.fromRGB(255,207,69)
-	elseif catch.mutation == "Diamond" then color = Color3.fromRGB(123,243,255)
-	elseif catch.mutation == "Sambal-Lava" then color = Color3.fromRGB(255,78,42) end
+	local mutation = catch.mutation
+	if mutation == "Gold" then color = Color3.fromRGB(255,207,69)
+	elseif mutation == "Diamond" then color = Color3.fromRGB(123,243,255)
+	elseif mutation == "Sambal-Lava" then color = Color3.fromRGB(255,78,42)
+	elseif mutation == "Silver" then color = Color3.fromRGB(205,212,224)
+	elseif mutation == "Frozen" then color = Color3.fromRGB(140,226,255)
+	elseif mutation == "Toxic" then color = Color3.fromRGB(96,255,64)
+	elseif mutation == "Galaxy" then color = Color3.fromRGB(88,38,158) end
 	local function piece(name, size, x,y,z, tint, ball)
 		return Models.part(model, name, size, CFrame.new(x,y,z), tint or color, nil, ball and Enum.PartType.Ball)
 	end
@@ -129,7 +177,19 @@ function Models.build(catch, parent)
 	highlight.FillTransparency, highlight.OutlineTransparency = 1, 0.3
 	highlight.DepthMode=Enum.HighlightDepthMode.Occluded
 	highlight.OutlineColor = Catalog.colors[item.rarity]
+	local style = mutation and MUTATION_STYLE[mutation]
+	if style then
+		highlight.OutlineColor = Catalog.mutationByName[mutation].color:Lerp(Color3.new(1,1,1),0.25)
+		for _, d in model:GetChildren() do
+			if d:IsA("BasePart") and d.Color == color then
+				d.Material = style.material
+				d.Transparency = style.transparency or 0
+				if style.reflectance then d.Reflectance = style.reflectance end
+			end
+		end
+	end
 	highlight.Parent = model
+	Models.mutationFx(model, mutation, 1)
 	Models.collectionLabel(core,item,catch)
 	model:SetAttribute("Mutation",catch.mutation or "Normal")
 	model:SetAttribute("Dance",item.effect == "dance")
@@ -189,9 +249,9 @@ function Models.plant(parent,id,position,yaw,stage)
 	return model
 end
 -- GIANT decor copy: real scaled model standing on the ground, name label overhead, no interaction.
-function Models.giant(parent,id,position,yaw,scale)
+function Models.giant(parent,id,position,yaw,scale,mutation)
 	local item=Catalog.byId[id]
-	local model=Models.build({id=id,mutation="Normal"},parent)
+	local model=Models.build({id=id,mutation=mutation or "Normal"},parent)
 	for _,d in model:GetDescendants() do
 		if d:IsA("BillboardGui") or d:IsA("Highlight") then d:Destroy() end
 	end
@@ -223,6 +283,8 @@ function Models.giant(parent,id,position,yaw,scale)
 	tier.TextColor3,tier.TextStrokeColor3,tier.TextStrokeTransparency=color,Color3.fromRGB(40,30,58),0
 	tier.Parent=label
 	Models.sparkle(model,color,scale*0.45,7,scale*0.3)
+	-- mutation particles are rebuilt at giant scale so they stay visible from afar
+	Models.mutationFx(model,mutation,scale*0.6)
 	return model
 end
 function Models.collectionLabel(core,item,catch)
@@ -234,7 +296,11 @@ function Models.collectionLabel(core,item,catch)
 	local mutation=catch.mutation or "Normal"
 	-- Only: name, mutation tag (if any), income.
 	local rows={{item.name,Color3.new(1,1,1)}}
-	if mutation~="Normal" then table.insert(rows,{mutation,Catalog.colors[item.rarity]}) end
+	if mutation~="Normal" then
+		local style=Catalog.mutationByName[mutation]
+		local tag=style and style.color:Lerp(Color3.new(1,1,1),0.3) or Catalog.colors[item.rarity]
+		table.insert(rows,{mutation,tag})
+	end
 	table.insert(rows,{Money.rate(Catalog.income(catch)),Color3.fromRGB(172,255,164)})
 	for i,row in rows do
 		local text=Instance.new("TextLabel")

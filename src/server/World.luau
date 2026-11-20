@@ -216,13 +216,13 @@ function World.create()
 	local giants=Instance.new("Folder")
 	giants.Name,giants.Parent="Giants",root
 	for _,g in {
-		{"maharaja",Vector3.new(-76,0.3,-96),math.pi},       -- behind the front stalls
+		{"maharaja",Vector3.new(-76,0.3,-96),math.pi,"Galaxy"}, -- behind the front stalls
 		{"phoenix",Vector3.new(-36,0.3,-14),math.rad(160)},  -- beside the ferris wheel
 		{"pocongphoenix",Vector3.new(-30,0.3,52),math.rad(200)}, -- near the fusion cart
 		{"pinisidurian",Vector3.new(-74,0.3,88),math.rad(180)},   -- by the home base
 		{"nagarujak",Vector3.new(106,0.3,22),math.rad(110)},     -- near the flood stilts
 	} do
-		Models.giant(giants,g[1],g[2],g[3],8)
+		Models.giant(giants,g[1],g[2],g[3],8,g[4])
 	end
 	return {root=root,water=water,center=center,fusion=fusion,branch=branch,spawn=spawn}
 end
