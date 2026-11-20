@@ -25,7 +25,7 @@ rarity tinggi. Koleksi di pedestal membayar setiap detik.
 Siklus 240 detik terdiri dari 180 detik senja dan 60 detik malam. Banjir Rob naik
 lima tingkat. Tiang L5 dan dua hibrida tahan air tetap menghasilkan saat terendam.
 Tikus Pasar mencuri uang; kunci $50K melindungi selama 60 detik, lalu cooldown 30 detik.
-Enam pasangan fusion khusus dan resep dua Legendary memberi jalur menuju Bombardilo Nagalero.
+Enam pasangan fusion khusus dan resep dua Legendary memberi jalur menuju Tralalero Halolala.
 Mutasi Gold, Diamond, Sambal-Lava, dan Rainbow mengalikan pendapatan.
 
 ## Sumber dan build

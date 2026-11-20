@@ -4,7 +4,7 @@ function Kiosk.create(context,Economy,Catalog,Models,Stalls,World)
 	local base=Models.part(context.world.root,"KiosLotre",Vector3.new(17,4,9),CFrame.new(32,2,55),Color3.fromRGB(174,113,221))
 	base.CanCollide=true
 	local roof=Models.part(context.world.root,"KiosRoof",Vector3.new(19,1,11),CFrame.new(32,11,55),Color3.fromRGB(255,186,100))
-	Models.label(roof,"KIOS LOTRE","putar, siapa tahu Bombardilo lewat",Color3.fromRGB(255,239,170),3)
+	Models.label(roof,"KIOS LOTRE","putar, siapa tahu Tralalero Halolala lewat",Color3.fromRGB(255,239,170),3)
 	local board=Models.part(context.world.root,"PeluangLotre",Vector3.new(18,6,0.5),CFrame.new(32,7,50),Color3.fromRGB(53,43,78))
 	local gui=Instance.new("SurfaceGui");gui.Face=Enum.NormalId.Front;gui.CanvasSize=Vector2.new(900,300);gui.Parent=board
 	local text=Instance.new("TextLabel");text.Size=UDim2.fromScale(1,1);text.BackgroundTransparency=1

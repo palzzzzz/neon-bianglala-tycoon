@@ -131,7 +131,7 @@ function World.create()
 		local shrub=part("PastelShrub",Vector3.new(5,5,5),p+Vector3.new(0,3,0),Color3.fromRGB(114,204,155))
 		shrub.Shape=Enum.PartType.Ball
 	end
-	-- KEBUN ANOMALI: decor-only garden in front of the wheel (no planting mechanics).
+	-- ANOMALY GARDEN: decor-only garden in front of the wheel (no planting mechanics).
 	local garden=Instance.new("Folder")
 	garden.Name,garden.Parent="KebunAnomali",root
 	local function gpart(name,size,pos,color,material,shape)
@@ -185,7 +185,7 @@ function World.create()
 		label.Size,label.BackgroundTransparency=UDim2.fromScale(1,1),1
 		label.Font,label.TextScaled=Enum.Font.GothamBlack,true
 		label.TextColor3,label.TextStrokeColor3,label.TextStrokeTransparency=Color3.fromRGB(255,240,200),Color3.fromRGB(74,46,34),0
-		label.Text="KEBUN ANOMALI"
+		label.Text="ANOMALY GARDEN"
 		label.Parent=gui
 	end
 	-- watering cans
