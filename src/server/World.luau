@@ -1,14 +1,19 @@
 local Models = require(game.ReplicatedStorage.Shared.BrainrotModels)
+local Money = require(game.ReplicatedStorage.Shared.Money)
+local Catalog = require(game.ReplicatedStorage.Shared.Catalog)
 local World = {}
 function World.create()
 	local lighting=game:GetService("Lighting")
 	lighting.ClockTime,lighting.Brightness,lighting.ExposureCompensation=16.2,2.2,0.05
-	lighting.Ambient=Color3.fromRGB(151,145,173)
-	lighting.OutdoorAmbient=Color3.fromRGB(174,177,199)
+	lighting.Ambient=Color3.fromRGB(168,142,160)
+	lighting.OutdoorAmbient=Color3.fromRGB(196,170,176)
 	lighting.GlobalShadows=false
 	local atmosphere=Instance.new("Atmosphere")
-	atmosphere.Density,atmosphere.Haze,atmosphere.Color=0.12,0.35,Color3.fromRGB(255,222,204)
+	atmosphere.Density,atmosphere.Haze,atmosphere.Color=0.12,0.3,Color3.fromRGB(255,206,170)
 	atmosphere.Parent=lighting
+	local grade=Instance.new("ColorCorrectionEffect")
+	grade.Name,grade.Saturation,grade.Contrast,grade.TintColor="WarmGrade",0.3,0.06,Color3.fromRGB(255,238,214)
+	grade.Parent=lighting
 	local bloom=Instance.new("BloomEffect")
 	bloom.Intensity,bloom.Size,bloom.Threshold=0.2,20,1.7
 	bloom.Parent=lighting
@@ -85,7 +90,7 @@ function World.create()
 	Models.label(fusion,"GEROBAK FUSION","Pilih 2 bahan di lapak [F]",Color3.fromRGB(255,238,171),5)
 	for _, x in {-47,-39} do part("IngredientTray",Vector3.new(3,0.4,3),Vector3.new(x,4.3,27),palette[2],Enum.Material.Neon) end
 	local branch=part("BranchGate",Vector3.new(24,4,4),Vector3.new(0,3,-83),palette[2])
-	Models.label(branch,"BUKA CABANG","$250.000 lifetime → income ×2",Color3.new(1,1,1),5)
+	Models.label(branch,"BUKA CABANG",Money.format(Catalog.rebirthBase).." lifetime → income ×2",Color3.new(1,1,1),5)
 	part("PhotoStage",Vector3.new(22,2,16),Vector3.new(75,1,65),palette[1])
 	for i=1,8 do
 		if i==2 then continue end -- Keep the spawn and its camera approach unobstructed.

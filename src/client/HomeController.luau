@@ -3,6 +3,7 @@ local Players=game:GetService("Players")
 local RunService=game:GetService("RunService")
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
 local Models=require(game.ReplicatedStorage.Shared.BrainrotModels)
+local Money=require(game.ReplicatedStorage.Shared.Money)
 local Home={open=false}
 local NAVY=Color3.fromRGB(44,39,74)
 local CREAM=Color3.fromRGB(255,244,216)
@@ -44,7 +45,7 @@ local function buildLineup()
 		label.AlwaysOnTop,label.MaxDistance=false,400
 		label.Adornee=core
 		label.Parent=core
-		local rows={item.name,item.rarity,"$"..item.rate.."/s"}
+		local rows={item.name,item.rarity,Money.rate(item.rate)}
 		for i,value in rows do
 			local t=Instance.new("TextLabel")
 			t.Size,t.Position=UDim2.fromScale(1,0.333),UDim2.fromScale(0,(i-1)/3)

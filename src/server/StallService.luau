@@ -1,5 +1,6 @@
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
 local Models=require(game.ReplicatedStorage.Shared.BrainrotModels)
+local Money=require(game.ReplicatedStorage.Shared.Money)
 local Economy=require(script.Parent.EconomyService)
 local World=require(script.Parent.World)
 local Stalls={plots={},views={}}
@@ -24,7 +25,7 @@ end
 function Stalls.lockStall(profile,index,now)
 	local stall=profile.stalls[index]
 	if not stall or (stall.readyAt or 0)>now then return false end
-	if not Economy.spendCash(profile,50) then return false end
+	if not Economy.spendCash(profile,Catalog.lockPrice) then return false end
 	stall.lockUntil,stall.readyAt=now+60,now+90
 	return true
 end
@@ -85,8 +86,8 @@ function Stalls.refresh(player,profile,context)
 			context.changed(player)
 		end
 		World.prompt(control,"Taruh bawaan",Enum.KeyCode.E,function(visitor) mine(visitor,function() Stalls.placeBrainrot(profile,index) end) end)
-		World.prompt(control,"Tiang "..(stall.level<5 and "$"..Catalog.stiltPrices[stall.level+1] or "MAX"),Enum.KeyCode.R,function(visitor) mine(visitor,function() Stalls.upgradeStilts(profile,index) end) end)
-		World.prompt(control,"Kunci $50 / 60 detik",Enum.KeyCode.T,function(visitor) mine(visitor,function() Stalls.lockStall(profile,index,os.clock()) end) end)
+		World.prompt(control,"Tiang "..(stall.level<5 and Money.format(Catalog.stiltPrices[stall.level+1]) or "MAX"),Enum.KeyCode.R,function(visitor) mine(visitor,function() Stalls.upgradeStilts(profile,index) end) end)
+		World.prompt(control,"Kunci "..Money.format(Catalog.lockPrice).." / 60 detik",Enum.KeyCode.T,function(visitor) mine(visitor,function() Stalls.lockStall(profile,index,os.clock()) end) end)
 		World.prompt(control,"Pilih bahan fusion",Enum.KeyCode.F,function(visitor) mine(visitor,function() Stalls.select(profile,index) end) end)
 	end
 end

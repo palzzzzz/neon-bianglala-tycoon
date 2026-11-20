@@ -20,8 +20,8 @@
       "$properties": {
         "Technology": "Future",
         "ClockTime": 16.2,
-        "Ambient": [0.59, 0.57, 0.68],
-        "OutdoorAmbient": [0.68, 0.69, 0.78],
+        "Ambient": [0.66, 0.56, 0.63],
+        "OutdoorAmbient": [0.77, 0.67, 0.69],
         "Brightness": 2.2,
         "GlobalShadows": false
       }

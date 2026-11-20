@@ -1,4 +1,5 @@
 local Catalog = require(script.Parent.Catalog)
+local Money = require(script.Parent.Money)
 local Models = {}
 function Models.part(parent, name, size, frame, color, material, shape)
 	local p = Instance.new("Part")
@@ -142,15 +143,18 @@ function Models.collectionLabel(core,item,catch)
 	label.AlwaysOnTop=false
 	label.Parent=core
 	local mutation=catch.mutation or "Normal"
-	local rows={item.name,item.rarity..(mutation~="Normal" and " · "..mutation or ""),"$"..Catalog.income(catch).."/s"}
-	for i,value in rows do
+	-- Only: name, mutation tag (if any), income.
+	local rows={{item.name,Color3.new(1,1,1)}}
+	if mutation~="Normal" then table.insert(rows,{mutation,Catalog.colors[item.rarity]}) end
+	table.insert(rows,{Money.rate(Catalog.income(catch)),Color3.fromRGB(172,255,164)})
+	for i,row in rows do
 		local text=Instance.new("TextLabel")
 		text.Name="Line"..i
-		text.Size,text.Position=UDim2.fromScale(1,0.333),UDim2.fromScale(0,(i-1)/3)
+		text.Size,text.Position=UDim2.fromScale(1,1/#rows),UDim2.fromScale(0,(i-1)/#rows)
 		text.BackgroundTransparency=1
-		text.Text,text.TextSize,text.Font=value,i==1 and 26 or 25,Enum.Font.GothamBlack
+		text.Text,text.TextSize,text.Font=row[1],i==1 and 26 or 25,Enum.Font.GothamBlack
 		text.TextScaled=true
-		text.TextColor3=i==2 and Catalog.colors[item.rarity] or i==3 and Color3.fromRGB(172,255,164) or Color3.new(1,1,1)
+		text.TextColor3=row[2]
 		text.TextStrokeColor3,text.TextStrokeTransparency=Color3.fromRGB(40,30,58),0
 		text.Parent=label
 	end

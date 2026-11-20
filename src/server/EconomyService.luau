@@ -44,7 +44,7 @@ function Economy.rates(profile,elapsed)
 			local item=Catalog.byId[stall.catch.id]
 			if not Tide.isStallFlooded(stall) or item.effect=="waterproof" then
 				rate=Catalog.income(stall.catch)
-				if item.effect=="commonBonus" then rate+=commonCount*2 end
+				if item.effect=="commonBonus" then rate+=commonCount*2000 end
 				if item.rarity=="Common" then
 					for _,j in {i-1,i+1} do
 						local neighbor=profile.stalls[j]

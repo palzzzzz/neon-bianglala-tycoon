@@ -1,5 +1,6 @@
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
 local Models=require(game.ReplicatedStorage.Shared.BrainrotModels)
+local Money=require(game.ReplicatedStorage.Shared.Money)
 local Economy=require(script.Parent.EconomyService)
 local Stalls=require(script.Parent.StallService)
 local Claim={carried={}}
@@ -18,7 +19,7 @@ function Claim.claimFromGondola(player,gondola,context)
 	local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if not root or (root.Position-gondola.base.Position).Magnitude>17 then return false end
 	local price=Catalog.byId[gondola.catch.id].price
-	if not Economy.spendCash(profile,price) then context.tell(player,"Butuh $"..price.." untuk gondola ini.");return false end
+	if not Economy.spendCash(profile,price) then context.tell(player,"Butuh "..Money.format(price).." untuk gondola ini.");return false end
 	profile.carry=gondola.catch
 	gondola.catch=nil
 	gondola.restockAt=context.elapsed+12

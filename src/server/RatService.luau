@@ -1,5 +1,6 @@
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
 local Models=require(game.ReplicatedStorage.Shared.BrainrotModels)
+local Money=require(game.ReplicatedStorage.Shared.Money)
 local Rats={active={},lastSpawn=-20}
 local rng=Random.new()
 function Rats.ratKingPickTarget(context)
@@ -32,7 +33,7 @@ function Rats.ratKingRewardDrop(context,king)
 		local angle=i*math.pi/6
 		local pos=Vector3.new(math.cos(angle)*14,3,25+math.sin(angle)*14)
 		local coin=Models.part(context.world.root,"KoinRaja",Vector3.new(2,2,0.5),CFrame.new(pos),Color3.fromRGB(255,210,64),Enum.Material.Neon,Enum.PartType.Cylinder)
-		Models.label(coin,"KOIN RAJA","$"..math.floor(reward/12),Color3.fromRGB(255,237,123),2)
+		Models.label(coin,"KOIN RAJA",Money.format(reward/12),Color3.fromRGB(255,237,123),2)
 		local claimed=false
 		local function collect(player)
 			local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -175,7 +176,7 @@ function Rats.update(dt,context)
 			if rat.flee then rat.model:Destroy();table.remove(Rats.active,i)
 			else
 				local stolen=Rats.ratStealAttempt(rat.target.profile,rat.target.stall,os.clock())
-				context.tell(rat.target.player,stolen>0 and "Tikus mencuri $"..math.floor(stolen).."!" or "?! Tikus terpental dari kunci!")
+				context.tell(rat.target.player,stolen>0 and "Tikus mencuri "..Money.format(stolen).."!" or "?! Tikus terpental dari kunci!")
 				rat.flee=true
 			end
 		else

@@ -1,5 +1,6 @@
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
 local Models=require(game.ReplicatedStorage.Shared.BrainrotModels)
+local Money=require(game.ReplicatedStorage.Shared.Money)
 local World=require(script.Parent.World)
 local Claim=require(script.Parent.ClaimService)
 local Wheel={gondolas={},rng=Random.new()}
@@ -15,7 +16,7 @@ function Wheel.stockGondola(gondola,context)
 	gondola.catch={id=id,mutation="Normal"}
 	gondola.display=Models.build(gondola.catch,gondola.model)
 	gondola.display:PivotTo(gondola.base.CFrame*CFrame.new(0,2.7,0))
-	gondola.prompt.ActionText="Klaim $"..Catalog.byId[id].price
+	gondola.prompt.ActionText="Klaim "..Money.format(Catalog.byId[id].price)
 	gondola.prompt.ObjectText=Catalog.byId[id].name
 	gondola.prompt.Enabled=true
 end

@@ -1,3 +1,4 @@
+local Money=require(game.ReplicatedStorage.Shared.Money)
 local Kiosk={busy=false,rng=Random.new(),prizes={}}
 function Kiosk.create(context,Economy,Catalog,Models,Stalls,World)
 	local base=Models.part(context.world.root,"KiosLotre",Vector3.new(17,4,9),CFrame.new(32,2,55),Color3.fromRGB(174,113,221))
@@ -8,7 +9,7 @@ function Kiosk.create(context,Economy,Catalog,Models,Stalls,World)
 	local gui=Instance.new("SurfaceGui");gui.Face=Enum.NormalId.Front;gui.CanvasSize=Vector2.new(900,300);gui.Parent=board
 	local text=Instance.new("TextLabel");text.Size=UDim2.fromScale(1,1);text.BackgroundTransparency=1
 	text.Font,text.TextSize,text.TextColor3=Enum.Font.GothamBold,30,Color3.new(1,1,1)
-	text.Text="UANG GAME SAJA · $250 × 2^cabang\nCommon 55% · Rare 27% · Epic 11%\nLegendary 4,5% · Mythic 2% · JACKPOT 0,5%\nJackpot = Rainbow ×20 · God hanya dari fusion\nJaminan Epic 15 / Legendary 40 · lihat HUD pribadi"
+	text.Text="UANG GAME SAJA · "..Money.format(Catalog.lotteryBasePrice).." × 2^cabang\nCommon 55% · Rare 27% · Epic 11%\nLegendary 4,5% · Mythic 2% · JACKPOT 0,5%\nJackpot = Rainbow ×20 · God hanya dari fusion\nJaminan Epic 15 / Legendary 40 · lihat HUD pribadi"
 	text.Parent=gui
 	local bulbs={}
 	for i=1,8 do bulbs[i]=Models.part(context.world.root,"LampuLotre",Vector3.one*0.8,CFrame.new(23+i*2,10,49.5),Color3.fromHSV(i/8,0.7,1),Enum.Material.Neon,Enum.PartType.Ball) end
@@ -37,8 +38,8 @@ function Kiosk.create(context,Economy,Catalog,Models,Stalls,World)
 		if profile.spinning then return false end
 		if profile.pendingPrize then revealSpinResult(player,profile);return false end
 		if Kiosk.busy or profile.spinning or profile.carry or Stalls.freeSlots(profile)<1 then context.tell(player,"Kosongkan bawaan dan satu pedestal; tunggu putaran selesai.");return false end
-		local price=250*2^profile.branches
-		if not Economy.spendCash(profile,price) then context.tell(player,"Lotre perlu $"..price.." uang game.");return false end
+		local price=Catalog.lotteryBasePrice*2^profile.branches
+		if not Economy.spendCash(profile,price) then context.tell(player,"Lotre perlu "..Money.format(price).." uang game.");return false end
 		local rarity,jackpot=Economy.rollGachaRarity(profile,Kiosk.rng)
 		Economy.pityStep(profile,rarity)
 		profile.pendingPrize={id=Catalog.pick(rarity,Kiosk.rng),mutation=jackpot and "Rainbow" or "Normal"}

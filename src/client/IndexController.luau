@@ -1,6 +1,7 @@
 -- Buku Koleksi: collection book panel (opened from HOME and the HUD INDEX button).
 local Players=game:GetService("Players")
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
+local Money=require(game.ReplicatedStorage.Shared.Money)
 local Index={data={owned={},seen={},heldMut={},seenMut={}}}
 local NAVY=Color3.fromRGB(44,39,74)
 local CREAM=Color3.fromRGB(255,244,216)
@@ -111,7 +112,7 @@ function Index.render()
 		if seen then count+=1 end
 		if seen then
 			entry.name.Text,entry.name.TextColor3=entry.item.name,CREAM
-			entry.info.Text="$"..entry.item.rate.."/s  ·  x"..owned
+			entry.info.Text=Money.rate(entry.item.rate).."  ·  x"..owned
 			entry.info.TextColor3=owned>0 and Color3.fromRGB(172,255,164) or Color3.fromRGB(255,224,150)
 			entry.card.BackgroundColor3=Color3.fromRGB(58,52,98)
 		else

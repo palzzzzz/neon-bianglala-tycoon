@@ -1,6 +1,7 @@
 local Players=game:GetService("Players")
 local RunService=game:GetService("RunService")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local Money=require(ReplicatedStorage.Shared.Money)
 local World=require(script.World)
 local Data=require(script.DataService)
 local Economy=require(script.EconomyService)
@@ -42,7 +43,7 @@ World.prompt(context.world.branch,"Buka Cabang",Enum.KeyCode.E,function(player)
 	local profile=Data.profiles[player]
 	if not profile then return end
 	if Rebirth.rebirthOpenBranch(profile) then context.changed(player);context.tell(player,"CABANG BARU! Income ×"..(profile.branches+1))
-	else context.tell(player,"Butuh lifetime $"..Rebirth.requirement(profile)) end
+	else context.tell(player,"Butuh lifetime "..Money.format(Rebirth.requirement(profile))) end
 end)
 Wheel.create(context)
 require(script.Runtime).context=context
@@ -79,7 +80,7 @@ if RunService:IsStudio() then
 			cabin.catch={id=args.id,mutation=args.mutation or "Normal"}
 			cabin.display=require(ReplicatedStorage.Shared.BrainrotModels).build(cabin.catch,cabin.model)
 			cabin.display:PivotTo(cabin.base.CFrame*CFrame.new(0,2.7,0))
-			cabin.prompt.ActionText="Klaim $"..require(ReplicatedStorage.Shared.Catalog).byId[args.id].price
+			cabin.prompt.ActionText="Klaim "..Money.format(require(ReplicatedStorage.Shared.Catalog).byId[args.id].price)
 			cabin.prompt.Enabled=true
 		elseif command=="steal" then return Rats.ratStealAttempt(profile,profile.stalls[args.index],os.clock(),args.multiplier)
 		end

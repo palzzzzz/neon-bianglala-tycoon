@@ -6,7 +6,7 @@ local storeOk,store=pcall(function() return DataStoreService:GetDataStore("Biang
 if not storeOk then store=nil end
 local owner=game.JobId ~= "" and game.JobId or "studio"
 function Data.fresh()
-	local profile={cash=25,lifetime=0,branches=0,stalls={},epicPity=0,legendPity=0}
+	local profile={cash=require(game.ReplicatedStorage.Shared.Catalog).startingCash,lifetime=0,branches=0,stalls={},epicPity=0,legendPity=0}
 	for i=1,6 do profile.stalls[i]={level=1} end
 	return profile
 end

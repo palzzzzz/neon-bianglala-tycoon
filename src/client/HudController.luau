@@ -1,5 +1,6 @@
 local Players=game:GetService("Players")
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
+local Money=require(game.ReplicatedStorage.Shared.Money)
 local Hud={}
 function Hud.toggleRecipe() Hud.recipe.Visible=not Hud.recipe.Visible end
 function Hud.create()
@@ -21,7 +22,7 @@ function Hud.create()
 		stroke.ApplyStrokeMode=Enum.ApplyStrokeMode.Border
 		return label
 	end
-	Hud.cash=panel("Cash",UDim2.fromScale(0.23,0.11),UDim2.fromScale(0.75,0.08),"$25  |  +$0/s")
+	Hud.cash=panel("Cash",UDim2.fromScale(0.23,0.11),UDim2.fromScale(0.75,0.08),Money.format(Catalog.startingCash).."  |  +$0/s")
 	Hud.gauge=panel("Tide",UDim2.fromScale(0.23,0.1),UDim2.fromScale(0.75,0.2),"ROB 0 / TIANG 1")
 	Hud.timer=panel("GondolaTimer",UDim2.fromScale(0.4,0.075),UDim2.fromScale(0.3,0.055),"GONDOLA BERIKUTNYA: 5",Color3.fromRGB(255,231,123))
 	Hud.timer.TextSize=26
@@ -63,9 +64,9 @@ function Hud.create()
 	Hud.gui=gui
 	task.delay(6,function() if not Hud.lastNotice then Hud.banner.Visible=false end end)
 end
-function Hud.renderCash(cash) Hud.cash.Text="$"..string.format("%.0f",cash) end
+function Hud.renderCash(cash) Hud.cash.Text=Money.format(cash) end
 function Hud.renderIncomeRate(rate,branches)
-	Hud.cash.Text..="\n+$"..string.format("%.1f",rate).."/s · CABANG "..branches
+	Hud.cash.Text..="\n+"..Money.rate(rate).." · CABANG "..branches
 end
 function Hud.showTideWarning(message)
 	Hud.banner.Text=message
@@ -101,7 +102,7 @@ function Hud.update(state)
 	elseif state.pendingPrize then nextStep="Ambil hadiahmu di podium Kios Lotre [E]"
 	elseif (state.night or state.phase>150) and state.stilt<5 then nextStep="Naikkan tiang sebelum Banjir Rob [R]"
 	elseif #state.selection==2 then nextStep="Bawa pilihanmu ke Gerobak Fusion [E]"
-	elseif state.rate<=0 then nextStep="Klaim Kakek Kangkung $10 dari gondola [E]"
+	elseif state.rate<=0 then nextStep="Klaim Kakek Kangkung "..Money.format(Catalog.byId.kangkung.price).." dari gondola [E]"
 	else nextStep="Putar Kios Lotre — jaminan Epic "..state.epicPity.."/15" end
 	Hud.next.Text="LANGKAH BERIKUTNYA: "..nextStep
 end

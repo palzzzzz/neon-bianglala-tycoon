@@ -18,13 +18,13 @@ Gerbang Buka Cabang mereset koleksi untuk pengali income dan dua pedestal tambah
 
 ## Aturan pasar
 
-Mulai dengan $25 dan enam pedestal. Enam belas karakter utama memiliki enam tingkat
+Mulai dengan $25K dan enam pedestal. Enam belas karakter utama memiliki enam tingkat
 rarity. Dua belas gondola berputar setiap 60 detik; posisi tinggi memberi peluang
 rarity tinggi. Koleksi di pedestal membayar setiap detik.
 
 Siklus 240 detik terdiri dari 180 detik senja dan 60 detik malam. Banjir Rob naik
 lima tingkat. Tiang L5 dan dua hibrida tahan air tetap menghasilkan saat terendam.
-Tikus Pasar mencuri uang; kunci $50 melindungi selama 60 detik, lalu cooldown 30 detik.
+Tikus Pasar mencuri uang; kunci $50K melindungi selama 60 detik, lalu cooldown 30 detik.
 Enam pasangan fusion khusus dan resep dua Legendary memberi jalur menuju Maharaja.
 Mutasi Gold, Diamond, Sambal-Lava, dan Rainbow mengalikan pendapatan.
 
