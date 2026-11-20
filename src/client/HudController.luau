@@ -40,7 +40,7 @@ function Hud.create()
 	Hud.recipe.TextSize=17
 	local lines={"RESEP GEROBAK FUSION"}
 	for _,r in Catalog.recipes do table.insert(lines,Catalog.byId[r[1]].name.." + "..Catalog.byId[r[2]].name.." → "..Catalog.byId[r[3]].name) end
-	table.insert(lines,"Legendary + Legendary → Maharaja 30% / Epic 70%")
+	table.insert(lines,"Legendary + Legendary → "..Catalog.byId.maharaja.name.." 30% / Epic 70%")
 	table.insert(lines,"Mutasi: Gold 4% · Diamond 2% · Sambal-Lava 1,5% · Rainbow 0,5%")
 	Hud.recipe.Text=table.concat(lines,"\n\n")
 	local button=Instance.new("TextButton")
@@ -102,7 +102,7 @@ function Hud.update(state)
 	elseif state.pendingPrize then nextStep="Ambil hadiahmu di podium Kios Lotre [E]"
 	elseif (state.night or state.phase>150) and state.stilt<5 then nextStep="Naikkan tiang sebelum Banjir Rob [R]"
 	elseif #state.selection==2 then nextStep="Bawa pilihanmu ke Gerobak Fusion [E]"
-	elseif state.rate<=0 then nextStep="Klaim Kakek Kangkung "..Money.format(Catalog.byId.kangkung.price).." dari gondola [E]"
+	elseif state.rate<=0 then nextStep="Klaim "..Catalog.byId.kangkung.name.." "..Money.format(Catalog.byId.kangkung.price).." dari gondola [E]"
 	else nextStep="Putar Kios Lotre — jaminan Epic "..state.epicPity.."/15" end
 	Hud.next.Text="LANGKAH BERIKUTNYA: "..nextStep
 end
