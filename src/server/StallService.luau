@@ -77,6 +77,10 @@ function Stalls.refresh(player,profile,context)
 			local model=Models.build(stall.catch,folder)
 			model:PivotTo(CFrame.new(pos+Vector3.new(0,2.6,0)))
 			model:SetAttribute("Idle",true)
+			local rarity=Catalog.byId[stall.catch.id].rarity
+			if index<=3 and (rarity=="Mythic" or rarity=="Brainrot God") then
+				Models.sparkle(model,Catalog.colors[rarity],0.9,3,1.5)
+			end
 		end
 		-- Ground-level controls remain reachable even when the pedestal is elevated.
 		local control=Models.part(folder,"Kontrol_"..index,Vector3.new(2,2,1),CFrame.new(pos.X,2,pos.Z+5),Color3.fromRGB(95,207,193),Enum.Material.Neon)

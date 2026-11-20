@@ -23,7 +23,7 @@
         "Ambient": [0.66, 0.56, 0.63],
         "OutdoorAmbient": [0.77, 0.67, 0.69],
         "Brightness": 2.2,
-        "GlobalShadows": false
+        "GlobalShadows": true
       }
     },
     "SoundService": {

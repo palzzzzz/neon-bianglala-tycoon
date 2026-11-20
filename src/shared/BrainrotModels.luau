@@ -136,6 +136,95 @@ function Models.build(catch, parent)
 	model.Parent = parent
 	return model
 end
+-- Sparse, tasteful sparkles drifting around a model (invisible emitter box matching its bounds).
+function Models.sparkle(model,color,size,rate,speed)
+	local box,extent=model:GetBoundingBox()
+	return Models.sparkleField(model,box,extent*0.9,color,size,rate,speed)
+end
+-- Invisible emitter box with the shared soft sparkle look (giants, front-row Mythics, garden).
+function Models.sparkleField(parent,frame,extent,color,size,rate,speed)
+	local field=Models.part(parent,"SparkleField",extent,frame,color)
+	field.Transparency,field.CastShadow=1,false
+	local e=Instance.new("ParticleEmitter")
+	e.Name="Sparkle"
+	e.Shape,e.ShapeStyle=Enum.ParticleEmitterShape.Box,Enum.ParticleEmitterShapeStyle.Volume
+	e.Color=ColorSequence.new(color:Lerp(Color3.new(1,1,1),0.55))
+	e.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(0.5,size),NumberSequenceKeypoint.new(1,0)})
+	e.Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(0.25,0.1),NumberSequenceKeypoint.new(0.75,0.25),NumberSequenceKeypoint.new(1,1)})
+	e.Lifetime=NumberRange.new(1.8,3)
+	e.Rate=rate
+	e.Speed=NumberRange.new(speed*0.4,speed)
+	e.SpreadAngle=Vector2.new(180,180)
+	e.Rotation,e.RotSpeed=NumberRange.new(0,360),NumberRange.new(-40,40)
+	e.LightEmission,e.LightInfluence=1,0
+	e.Parent=field
+	return field
+end
+-- Decor-only "planted anomaly": a character at a growth scale, sunk into a soil bed, no label, no interaction.
+-- stage 1 = small sprout, 2 = half-grown, 3 = full size.
+local GROWTH={0.3,0.6,1}
+function Models.plant(parent,id,position,yaw,stage)
+	local scale=GROWTH[stage]
+	local model=Models.build({id=id,mutation="Normal"},parent)
+	for _,d in model:GetDescendants() do
+		if d:IsA("BillboardGui") or d:IsA("Highlight") then d:Destroy() end
+	end
+	model:SetAttribute("Idle",nil)
+	model:ScaleTo(scale)
+	model:PivotTo(CFrame.new(position)*CFrame.Angles(0,yaw,0))
+	local box,size=model:GetBoundingBox()
+	model:TranslateBy(Vector3.new(0,position.Y-0.25*scale-(box.Position.Y-size.Y/2),0))
+	for _,d in model:GetDescendants() do
+		if d:IsA("BasePart") then d.CanCollide,d.CanTouch,d.CanQuery=false,false,false end
+	end
+	if stage==1 then
+		-- sprout leaves on top of the little head
+		local top=box.Position.Y+size.Y/2+position.Y-0.25*scale-(box.Position.Y-size.Y/2)
+		for side=-1,1,2 do
+			local leaf=Models.part(model,"SproutLeaf",Vector3.new(0.9,0.12,0.5),CFrame.new(position.X+side*0.45,top+0.2,position.Z)*CFrame.Angles(0,0,side*0.5),Color3.fromRGB(96,205,104),nil,Enum.PartType.Ball)
+			leaf.CanCollide=false
+		end
+	end
+	model.Name="Anomali_"..Catalog.byId[id].name
+	return model
+end
+-- GIANT decor copy: real scaled model standing on the ground, name label overhead, no interaction.
+function Models.giant(parent,id,position,yaw,scale)
+	local item=Catalog.byId[id]
+	local model=Models.build({id=id,mutation="Normal"},parent)
+	for _,d in model:GetDescendants() do
+		if d:IsA("BillboardGui") or d:IsA("Highlight") then d:Destroy() end
+	end
+	model:ScaleTo(scale)
+	model:PivotTo(CFrame.new(position)*CFrame.Angles(0,yaw,0))
+	local box,size=model:GetBoundingBox()
+	model:TranslateBy(Vector3.new(0,position.Y-(box.Position.Y-size.Y/2),0))
+	for _,d in model:GetDescendants() do
+		if d:IsA("BasePart") then d.CastShadow,d.CanCollide,d.CanTouch,d.CanQuery=true,false,false,false end
+	end
+	model.Name="Giant_"..item.name
+	local color=Catalog.colors[item.rarity]
+	local box2,size2=model:GetBoundingBox()
+	local core=model.PrimaryPart
+	local label=Instance.new("BillboardGui")
+	label.Name,label.Size="GiantLabel",UDim2.fromScale(46,12)
+	label.Adornee=core
+	label.StudsOffsetWorldSpace=Vector3.new(0,box2.Position.Y+size2.Y/2+9-core.Position.Y,0)
+	label.MaxDistance,label.AlwaysOnTop=700,false
+	label.Parent=core
+	local name=Instance.new("TextLabel")
+	name.Size,name.BackgroundTransparency=UDim2.fromScale(1,0.62),1
+	name.Text,name.Font,name.TextScaled=item.name,Enum.Font.GothamBlack,true
+	name.TextColor3,name.TextStrokeColor3,name.TextStrokeTransparency=Color3.new(1,1,1),Color3.fromRGB(40,30,58),0
+	name.Parent=label
+	local tier=Instance.new("TextLabel")
+	tier.Size,tier.Position,tier.BackgroundTransparency=UDim2.fromScale(1,0.34),UDim2.fromScale(0,0.64),1
+	tier.Text,tier.Font,tier.TextScaled=item.rarity:upper(),Enum.Font.GothamBlack,true
+	tier.TextColor3,tier.TextStrokeColor3,tier.TextStrokeTransparency=color,Color3.fromRGB(40,30,58),0
+	tier.Parent=label
+	Models.sparkle(model,color,scale*0.45,7,scale*0.3)
+	return model
+end
 function Models.collectionLabel(core,item,catch)
 	local label=Instance.new("BillboardGui")
 	label.Name,label.Size="CollectionLabel",UDim2.fromScale(14,4.8)

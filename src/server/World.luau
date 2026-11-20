@@ -7,7 +7,7 @@ function World.create()
 	lighting.ClockTime,lighting.Brightness,lighting.ExposureCompensation=16.2,2.2,0.05
 	lighting.Ambient=Color3.fromRGB(168,142,160)
 	lighting.OutdoorAmbient=Color3.fromRGB(196,170,176)
-	lighting.GlobalShadows=false
+	lighting.GlobalShadows=true
 	local atmosphere=Instance.new("Atmosphere")
 	atmosphere.Density,atmosphere.Haze,atmosphere.Color=0.12,0.3,Color3.fromRGB(255,206,170)
 	atmosphere.Parent=lighting
@@ -130,6 +130,99 @@ function World.create()
 		part("Planter",Vector3.new(5,1.5,5),p+Vector3.new(0,0.75,0),palette[2])
 		local shrub=part("PastelShrub",Vector3.new(5,5,5),p+Vector3.new(0,3,0),Color3.fromRGB(114,204,155))
 		shrub.Shape=Enum.PartType.Ball
+	end
+	-- KEBUN ANOMALI: decor-only garden in front of the wheel (no planting mechanics).
+	local garden=Instance.new("Folder")
+	garden.Name,garden.Parent="KebunAnomali",root
+	local function gpart(name,size,pos,color,material,shape)
+		return Models.part(garden,name,size,pos,color,material,shape)
+	end
+	local wood,soil=Color3.fromRGB(150,102,66),Color3.fromRGB(92,64,50)
+	local plantIds={"kangkung","lemper","boba","pentol","nangka","rendang","koplo","parkir","naga"}
+	local perBed={4,3,2} -- small sprouts, half-grown, full size
+	local rowZ={14,6,-2} -- sprouts at the front, full-size anomalies nearest the wheel
+	local planted=0
+	for side=-1,1,2 do
+		for _,cx in {side*14,side*26} do
+			for row=1,3 do
+				local cz=rowZ[row]
+				gpart("BedFrame",Vector3.new(10.6,0.9,5.6),CFrame.new(cx,0.45,cz),wood)
+				gpart("SoilBed",Vector3.new(10,0.95,5),CFrame.new(cx,0.5,cz),soil)
+				for k=1,perBed[row] do
+					planted+=1
+					local px=cx-5+(k-0.5)*10/perBed[row]
+					Models.plant(garden,plantIds[(planted-1)%#plantIds+1],Vector3.new(px,0.95,cz),math.pi,row)
+				end
+			end
+		end
+		-- seed packets on stakes at the row ends
+		for row=1,3 do
+			local colorPick=palette[(row+side+1)%3+1]
+			gpart("PacketStake",Vector3.new(0.18,3.2,0.18),CFrame.new(side*7.4,1.6,rowZ[row]+2.2),wood)
+			local packet=gpart("SeedPacket",Vector3.new(1.6,2.2,0.12),CFrame.new(side*7.4,3.7,rowZ[row]+2.2),colorPick)
+			for _,face in {Enum.NormalId.Front,Enum.NormalId.Back} do
+				local gui=Instance.new("SurfaceGui")
+				gui.Face,gui.CanvasSize,gui.Parent=face,Vector2.new(160,220),packet
+				local label=Instance.new("TextLabel")
+				label.Size,label.BackgroundTransparency=UDim2.fromScale(1,1),1
+				label.Font,label.TextScaled=Enum.Font.GothamBlack,true
+				label.TextColor3=Color3.fromRGB(58,42,76)
+				label.Text="BIBIT\nANOMALI"
+				label.Parent=gui
+			end
+		end
+		-- soft sparkle drifting over this half of the garden (same look as the giants)
+		Models.sparkleField(garden,CFrame.new(side*20,3.5,6),Vector3.new(24,7,21),Color3.fromRGB(255,222,140),0.8,5,1)
+	end
+	-- wooden entrance sign over the central path
+	for _,x in {-9.5,9.5} do gpart("SignPost",Vector3.new(0.9,11,0.9),CFrame.new(x,5.5,21),wood) end
+	local board=gpart("KebunSign",Vector3.new(21,3.8,0.6),CFrame.new(0,9.6,21),Color3.fromRGB(176,124,78))
+	gpart("SignRail",Vector3.new(22,0.5,0.9),CFrame.new(0,11.7,21),wood)
+	for _,face in {Enum.NormalId.Front,Enum.NormalId.Back} do
+		local gui=Instance.new("SurfaceGui")
+		gui.Face,gui.CanvasSize,gui.Parent=face,Vector2.new(840,152),board
+		local label=Instance.new("TextLabel")
+		label.Size,label.BackgroundTransparency=UDim2.fromScale(1,1),1
+		label.Font,label.TextScaled=Enum.Font.GothamBlack,true
+		label.TextColor3,label.TextStrokeColor3,label.TextStrokeTransparency=Color3.fromRGB(255,240,200),Color3.fromRGB(74,46,34),0
+		label.Text="KEBUN ANOMALI"
+		label.Parent=gui
+	end
+	-- watering cans
+	for _,can in {{Vector3.new(8.6,0,10),0.6,Color3.fromRGB(103,212,203)},{Vector3.new(-8.6,0,2),math.pi-0.5,Color3.fromRGB(255,137,139)}} do
+		local base=CFrame.new(can[1])*CFrame.Angles(0,can[2],0)
+		local function piece(name,size,offset,color,shape,rotation)
+			return Models.part(garden,name,size,base*CFrame.new(offset)*(rotation or CFrame.new()),color,nil,shape)
+		end
+		piece("CanBody",Vector3.new(1.7,1.8,1.8),Vector3.new(0,0.9,0),can[3],Enum.PartType.Cylinder,CFrame.Angles(0,0,math.pi/2))
+		piece("CanTop",Vector3.new(0.15,1.8,1.8),Vector3.new(0,1.8,0),Color3.fromRGB(240,240,235),Enum.PartType.Cylinder,CFrame.Angles(0,0,math.pi/2))
+		piece("CanSpout",Vector3.new(0.3,0.3,2.1),Vector3.new(0,1.5,-1.7),can[3],nil,CFrame.Angles(math.rad(35),0,0))
+		piece("CanRose",Vector3.new(0.9,0.9,0.3),Vector3.new(0,2.3,-2.5),Color3.fromRGB(240,240,235),Enum.PartType.Cylinder,CFrame.Angles(0,math.pi/2,0))
+		piece("CanHandleTop",Vector3.new(0.25,0.25,1.3),Vector3.new(0,2.2,0.85),Color3.fromRGB(240,240,235),nil,CFrame.Angles(math.rad(-25),0,0))
+		piece("CanHandleLow",Vector3.new(0.25,1.4,0.25),Vector3.new(0,1.3,1.45),Color3.fromRGB(240,240,235))
+	end
+	-- loose seed packets lying by the paths
+	for _,loose in {{Vector3.new(7.4,0.1,6),0.4},{Vector3.new(-7.4,0.1,10),-0.5}} do
+		local flat=Models.part(garden,"LooseSeedPacket",Vector3.new(1.6,0.12,2.2),CFrame.new(loose[1])*CFrame.Angles(0,loose[2],0),palette[2])
+		local gui=Instance.new("SurfaceGui")
+		gui.Face,gui.CanvasSize,gui.Parent=Enum.NormalId.Top,Vector2.new(160,220),flat
+		local label=Instance.new("TextLabel")
+		label.Size,label.BackgroundTransparency=UDim2.fromScale(1,1),1
+		label.Font,label.TextScaled,label.TextColor3=Enum.Font.GothamBlack,true,Color3.fromRGB(58,42,76)
+		label.Text="BIBIT"
+		label.Parent=gui
+	end
+	-- Five GIANT permanent decor copies (8x) of the five highest-rarity characters.
+	local giants=Instance.new("Folder")
+	giants.Name,giants.Parent="Giants",root
+	for _,g in {
+		{"maharaja",Vector3.new(-76,0.3,-96),math.pi},       -- behind the front stalls
+		{"phoenix",Vector3.new(-36,0.3,-14),math.rad(160)},  -- beside the ferris wheel
+		{"pocongphoenix",Vector3.new(-30,0.3,52),math.rad(200)}, -- near the fusion cart
+		{"pinisidurian",Vector3.new(-74,0.3,88),math.rad(180)},   -- by the home base
+		{"nagarujak",Vector3.new(106,0.3,22),math.rad(110)},     -- near the flood stilts
+	} do
+		Models.giant(giants,g[1],g[2],g[3],8)
 	end
 	return {root=root,water=water,center=center,fusion=fusion,branch=branch,spawn=spawn}
 end
