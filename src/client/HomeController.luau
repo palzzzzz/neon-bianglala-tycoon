@@ -38,20 +38,20 @@ local function buildLineup()
 		local core=model.PrimaryPart
 		local old=core and core:FindFirstChild("CollectionLabel")
 		if old then old:Destroy() end
-		-- three-line label: name / rarity / $ per second (alternating heights so neighbours never collide)
+		-- two-line label: name / $ per second (alternating heights so neighbours never collide)
 		local label=Instance.new("BillboardGui")
-		label.Name,label.Size="HomeLabel",UDim2.fromScale(12.4,4.2)
+		label.Name,label.Size="HomeLabel",UDim2.fromScale(12.4,3)
 		label.StudsOffset=Vector3.new(0,slot%2==0 and 11.4 or 7.2,0)
 		label.AlwaysOnTop,label.MaxDistance=false,400
 		label.Adornee=core
 		label.Parent=core
-		local rows={item.name,item.rarity,Money.rate(item.rate)}
+		local rows={item.name,Money.rate(item.rate)}
 		for i,value in rows do
 			local t=Instance.new("TextLabel")
-			t.Size,t.Position=UDim2.fromScale(1,0.333),UDim2.fromScale(0,(i-1)/3)
+			t.Size,t.Position=UDim2.fromScale(1,0.5),UDim2.fromScale(0,(i-1)/2)
 			t.BackgroundTransparency=1
 			t.Text,t.Font,t.TextScaled=value,Enum.Font.GothamBlack,true
-			t.TextColor3=i==2 and color or i==3 and Color3.fromRGB(172,255,164) or Color3.new(1,1,1)
+			t.TextColor3=i==2 and Color3.fromRGB(172,255,164) or Color3.new(1,1,1)
 			t.TextStrokeColor3,t.TextStrokeTransparency=Color3.fromRGB(40,30,58),0
 			t.Parent=label
 		end
