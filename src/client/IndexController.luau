@@ -2,6 +2,7 @@
 local Players=game:GetService("Players")
 local Catalog=require(game.ReplicatedStorage.Shared.Catalog)
 local Money=require(game.ReplicatedStorage.Shared.Money)
+local Models=require(game.ReplicatedStorage.Shared.BrainrotModels)
 local Index={data={owned={},seen={},heldMut={},seenMut={}}}
 local NAVY=Color3.fromRGB(44,39,74)
 local CREAM=Color3.fromRGB(255,244,216)
@@ -35,6 +36,35 @@ local function text(parent,name,value,size,position,color,font)
 	return t
 end
 
+-- Square 3D portrait of the character's real model, framed from its bounding box
+-- (so oddly pivoted / large models such as wings, ships and halos still fit) on a rarity-tinted backdrop.
+local function portrait(card,item,color)
+	local view=Instance.new("ViewportFrame")
+	view.Name,view.Size,view.Position="Portrait",UDim2.fromScale(0,0.9),UDim2.fromScale(0.03,0.05)
+	view.BackgroundColor3,view.BackgroundTransparency=color:Lerp(Color3.fromRGB(30,26,52),0.62),0
+	view.Ambient,view.LightColor,view.LightDirection=Color3.fromRGB(190,185,200),Color3.new(1,1,1),Vector3.new(0.3,-0.6,1)
+	view.Parent=card
+	local ratio=Instance.new("UIAspectRatio");ratio.AspectRatio,ratio.DominantAxis=1,Enum.DominantAxis.Height;ratio.Parent=view
+	round(view,6)
+	local model=Models.build({id=item.id,mutation="Normal"},view)
+	for _,d in model:GetDescendants() do
+		if d:IsA("BillboardGui") then d:Destroy() end
+	end
+	local highlight=model:FindFirstChildOfClass("Highlight")
+	if highlight then highlight:Destroy() end
+	local boxCFrame,size=model:GetBoundingBox()
+	local camera=Instance.new("Camera")
+	camera.FieldOfView=35
+	local center=boxCFrame.Position
+	local extent=math.max(size.Y,size.X*0.9)/2*1.12
+	local distance=extent/math.tan(math.rad(camera.FieldOfView/2))+size.Z/2
+	-- characters face -Z, so the camera sits on the -Z side, slightly above centre
+	camera.CFrame=CFrame.lookAt(center+Vector3.new(0,size.Y*0.06,-distance),center)
+	camera.Parent=view
+	view.CurrentCamera=camera
+	return view
+end
+
 function Index.create()
 	local gui=Instance.new("ScreenGui")
 	gui.Name,gui.ResetOnSpawn,gui.IgnoreGuiInset,gui.DisplayOrder="IndexGui",false,true,20
@@ -66,9 +96,10 @@ function Index.create()
 				local card=box(row,"Card_"..item.id,UDim2.fromScale(0.153,0.84),UDim2.fromScale(0.155+slot*0.1665,0.08),NAVY,0)
 				round(card,8);stroke(card,color,2)
 				card:SetAttribute("Rarity",rarity)
-				local name=text(card,"Name",item.name,UDim2.fromScale(0.94,0.5),UDim2.fromScale(0.03,0.04),CREAM,Enum.Font.GothamBlack)
-				local info=text(card,"Info","",UDim2.fromScale(0.94,0.36),UDim2.fromScale(0.03,0.56),Color3.fromRGB(172,255,164))
-				Index.cards[item.id]={card=card,name=name,info=info,item=item,color=color}
+				local view=portrait(card,item,color)
+				local name=text(card,"Name",item.name,UDim2.fromScale(0.6,0.5),UDim2.fromScale(0.38,0.04),CREAM,Enum.Font.GothamBlack)
+				local info=text(card,"Info","",UDim2.fromScale(0.6,0.36),UDim2.fromScale(0.38,0.56),Color3.fromRGB(172,255,164))
+				Index.cards[item.id]={card=card,name=name,info=info,item=item,color=color,view=view}
 				slot+=1
 			end
 		end
@@ -110,6 +141,7 @@ function Index.render()
 		local owned=data.owned[id] or 0
 		local seen=data.seen[id] or owned>0
 		if seen then count+=1 end
+		entry.view.ImageColor3=seen and Color3.new(1,1,1) or Color3.fromRGB(8,8,14) -- unseen characters show as silhouettes
 		if seen then
 			entry.name.Text,entry.name.TextColor3=entry.item.name,CREAM
 			entry.info.Text=Money.rate(entry.item.rate).."  ·  x"..owned
