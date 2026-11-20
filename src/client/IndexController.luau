@@ -40,11 +40,10 @@ end
 -- (so oddly pivoted / large models such as wings, ships and halos still fit) on a rarity-tinted backdrop.
 local function portrait(card,item,color)
 	local view=Instance.new("ViewportFrame")
-	view.Name,view.Size,view.Position="Portrait",UDim2.fromScale(0,0.9),UDim2.fromScale(0.03,0.05)
+	view.Name,view.Size,view.Position="Portrait",UDim2.fromScale(0.34,0.9),UDim2.fromScale(0.03,0.05)
 	view.BackgroundColor3,view.BackgroundTransparency=color:Lerp(Color3.fromRGB(30,26,52),0.62),0
 	view.Ambient,view.LightColor,view.LightDirection=Color3.fromRGB(190,185,200),Color3.new(1,1,1),Vector3.new(0.3,-0.6,1)
 	view.Parent=card
-	local ratio=Instance.new("UIAspectRatio");ratio.AspectRatio,ratio.DominantAxis=1,Enum.DominantAxis.Height;ratio.Parent=view
 	round(view,6)
 	local model=Models.build({id=item.id,mutation="Normal"},view)
 	for _,d in model:GetDescendants() do
